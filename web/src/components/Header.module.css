@@ -1,0 +1,73 @@
+.hdr {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--bd);
+  padding: 0 18px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.logoIco {
+  width: 26px;
+  height: 26px;
+  background: linear-gradient(135deg, #f55036, #ff8c42);
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+}
+
+.sub {
+  font-size: 10px;
+  color: var(--tx2);
+  font-weight: 400;
+}
+
+.right {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.bx {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 500;
+  border: 1px solid;
+}
+
+.model {
+  background: rgba(245, 80, 54, 0.1);
+  color: var(--gr);
+  border-color: rgba(245, 80, 54, 0.3);
+}
+
+.ready {
+  background: var(--gnb);
+  color: var(--gn);
+  border-color: rgba(63, 185, 80, 0.3);
+}
+
+.busy {
+  background: var(--amb);
+  color: var(--am);
+  border-color: rgba(210, 153, 34, 0.3);
+}
+
+.err {
+  background: var(--rdb);
+  color: var(--rd);
+  border-color: rgba(248, 81, 73, 0.3);
+}

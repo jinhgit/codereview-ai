@@ -1,0 +1,263 @@
+.panel {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: height 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  height: 0;
+  border-top: 2px solid transparent;
+}
+
+.panel.open {
+  height: 240px;
+  border-top: 2px solid #3fb950;
+}
+
+.panel.closed {
+  height: 0;
+  border-top: 2px solid transparent;
+}
+
+.hdr {
+  padding: 7px 12px;
+  background: #0d1f14;
+  border-bottom: 1px solid rgba(63, 185, 80, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.hdrLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon {
+  font-size: 11px;
+  width: 20px;
+  height: 20px;
+  background: #3fb950;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+}
+
+.title {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.status {
+  font-size: 9px;
+  padding: 1px 7px;
+  border-radius: 8px;
+  font-weight: 600;
+  border: 1px solid;
+}
+
+.idle {
+  background: rgba(139, 148, 158, 0.1);
+  color: #8b949e;
+  border-color: rgba(139, 148, 158, 0.25);
+}
+
+.running {
+  background: rgba(210, 153, 34, 0.15);
+  color: #d29922;
+  border-color: rgba(210, 153, 34, 0.4);
+  animation: pulse 0.8s ease-in-out infinite;
+}
+
+.success {
+  background: rgba(63, 185, 80, 0.15);
+  color: #3fb950;
+  border-color: rgba(63, 185, 80, 0.35);
+}
+
+.error {
+  background: rgba(248, 81, 73, 0.12);
+  color: #f85149;
+  border-color: rgba(248, 81, 73, 0.35);
+}
+
+.time {
+  font-size: 9px;
+  color: #8b949e;
+  font-family: var(--mono);
+}
+
+.hdrRight {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tool {
+  background: none;
+  border: none;
+  color: #8b949e;
+  font-size: 12px;
+  padding: 3px 6px;
+  border-radius: 4px;
+}
+
+.tool:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #e6edf3;
+}
+
+.stdin {
+  padding: 5px 12px;
+  border-bottom: 1px solid var(--bd);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg2);
+  flex-shrink: 0;
+}
+
+.stdinLabel {
+  font-size: 9px;
+  color: var(--tx2);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  padding: 2px 6px;
+  background: var(--bg3);
+  border-radius: 4px;
+  border: 1px solid var(--bd);
+}
+
+.stdinInput {
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--bd);
+  border-radius: 5px;
+  padding: 4px 9px;
+  font-size: 11px;
+  color: var(--tx);
+  font-family: var(--mono);
+  outline: none;
+}
+
+.stdinInput:focus {
+  border-color: var(--gn);
+  box-shadow: 0 0 0 2px rgba(63, 185, 80, 0.12);
+}
+
+.output {
+  flex: 1;
+  overflow-y: auto;
+  background: #010409;
+}
+
+.outEmpty {
+  display: block;
+  padding: 24px 16px;
+  color: #8b949e;
+  font-size: 11px;
+  font-style: italic;
+  text-align: center;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 24px 16px;
+}
+
+.outSpin {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #30363d;
+  border-top-color: #3fb950;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+.loadTitle {
+  font-size: 12px;
+  font-weight: 500;
+  color: #e6edf3;
+  margin-bottom: 3px;
+}
+
+.loadSub {
+  font-size: 10px;
+  color: #8b949e;
+}
+
+.section {
+  border-bottom: 1px solid #1c2128;
+  padding: 10px 14px;
+}
+
+.sectionOk {
+  background: rgba(63, 185, 80, 0.03);
+}
+.sectionErr {
+  background: rgba(248, 81, 73, 0.03);
+}
+.sectionWarn {
+  background: rgba(210, 153, 34, 0.03);
+}
+
+.secTitle {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-bottom: 6px;
+  color: #8b949e;
+}
+
+.secBody {
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.stdout {
+  color: #e6edf3;
+}
+.stderr {
+  color: #ff7b72;
+}
+
+.emptyResult {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 16px;
+}
+
+.footer {
+  padding: 7px 14px;
+  font-size: 10px;
+  color: #8b949e;
+  background: #0d1117;
+  border-top: 1px solid #1c2128;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono);
+}
+
+.badge {
+  background: #21262d;
+  color: #8b949e;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 9px;
+  border: 1px solid #30363d;
+}

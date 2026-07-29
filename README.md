@@ -385,26 +385,46 @@ git clone https://github.com/jinhgit/codereview-ai.git
 cd codereview-ai
 ```
 
-### 2. 앱 실행
+### 2. 웹 앱 실행 (권장 · 개발 중)
 
-서버 없이 HTML을 브라우저로 열면 됩니다.
+Vite + React + TypeScript 클라이언트가 `web/` 에 있습니다.  
+**1차 범위**: 에디터 · API Key · 코드 리뷰 · 오류 수정 · 실행 · (60점 미만) 자동 최적화
+
+```bash
+cd web
+npm install
+npm run dev
+# → http://localhost:5173
+```
+
+프로덕션 빌드:
+
+```bash
+cd web
+npm run build    # dist/ 생성
+npm run preview  # 빌드 결과 미리보기
+```
+
+### 3. 프로토타입 HTML (레거시)
+
+서버 없이 단일 HTML을 브라우저로 열 수도 있습니다. (챗·협업 포함 전체 기능)
 
 ```bash
 # macOS
 open codereview-ai.html
 
-# 또는 로컬 정적 서버 (권장: 일부 브라우저 정책 회피)
+# 또는 로컬 정적 서버
 python3 -m http.server 8080
 # → http://localhost:8080/codereview-ai.html
 ```
 
-### 3. Groq API Key
+### 4. Groq API Key
 
 1. https://console.groq.com/keys 에서 키 발급  
 2. 앱 상단 배너에 `gsk_...` 입력 후 **저장**  
 3. 키는 `sessionStorage`에만 저장됩니다 (새로고침 시 같은 탭에서는 유지, 탭 종료 시 삭제될 수 있음)
 
-### 4. 제품 PDF 재생성 (선택)
+### 5. 제품 PDF 재생성 (선택)
 
 ```bash
 python3 -m venv .venv
@@ -423,16 +443,25 @@ macOS에서 한글 폰트는 기본적으로
 
 ```
 codereview-ai/
-├── README.md                          # 본 문서
+├── README.md
 ├── .gitignore
-├── codereview-ai.html                 # 앱 전체 (CSS + HTML + JS ×2)
-│   ├── CSS: 메인 UI 테마 · 에디터 · 챗 · 리뷰 · 실행 패널
-│   ├── Script 1 (window.load): 리뷰 / 수정 / 최적화 / 실행 / 챗 / GitHub
-│   ├── 협업 패널 HTML + Collab CSS
-│   └── Script 2 (IIFE): 저장소 · PR · Diff · AI 하이브리드
-└── docs/
-    ├── CodeReview_AI_PRD_기능명세서_API명세서.pdf
-    └── generate_specs.py              # ReportLab PDF 생성기
+├── codereview-ai.html                 # 레거시 단일 HTML 프로토타입
+├── docs/
+│   ├── CodeReview_AI_PRD_기능명세서_API명세서.pdf
+│   └── generate_specs.py
+└── web/                               # ⭐ 웹 앱 (Vite + React + TS)
+    ├── package.json
+    ├── vite.config.ts
+    ├── index.html
+    └── src/
+        ├── main.tsx
+        ├── App.tsx
+        ├── components/                # Header, Editor, Review, Fix, Exec, Optimize
+        ├── services/                  # groq, piston, ai, keyStore
+        ├── types/
+        ├── utils/
+        ├── data/samples.ts
+        └── styles/global.css
 ```
 
 | 구간 (대략) | 내용 |
@@ -479,9 +508,11 @@ codereview-ai/
 
 | Phase | 내용 |
 |-------|------|
-| **P0** | 단일 HTML 프로토타입 (현재) |
-| **P1** | 제품 문서 · README (현재) |
-| **P2** | 웹 앱 스캐폴딩 + BFF (키 서버 보관) |
+| **P0** | 단일 HTML 프로토타입 |
+| **P1** | 제품 문서 · README |
+| **P2** | 웹 앱 핵심 루프 (에디터·리뷰·수정·실행) — **진행 중** |
+| **P2.1** | 챗봇 · GitHub 로드 · 협업 패널 이식 |
+| **P2.2** | BFF (API Key 서버 보관) |
 | **P3** | 계정 · 서버 저장 채팅/협업 |
 | **P4** | 실 Git 연동 · 팀 워크스페이스 |
 
