@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { ChatPane } from './components/ChatPane'
 import { EditorPane } from './components/EditorPane'
 import { ExecPanel } from './components/ExecPanel'
 import { FixPanel } from './components/FixPanel'
@@ -20,6 +21,7 @@ import type {
   RightTab,
   StatusKind,
 } from './types'
+import type { LeftTab } from './types/chat'
 import { detectLang } from './utils/detectLang'
 import styles from './App.module.css'
 
@@ -31,6 +33,7 @@ export default function App() {
   const [showKeyBanner, setShowKeyBanner] = useState(() => !getGroqKey())
   const [modelLabel, setModelLabel] = useState(getCurrentModelLabel)
   const [status, setStatus] = useState<StatusKind>('ready')
+  const [leftTab, setLeftTab] = useState<LeftTab>('editor')
   const [rightTab, setRightTab] = useState<RightTab>('review')
 
   const [reviewLoading, setReviewLoading] = useState(false)
@@ -177,6 +180,12 @@ export default function App() {
     setFixDot(false)
   }
 
+  const applyFromChat = (next: string) => {
+    applyCode(next)
+    // 적용 직후 에디터 하이라이트 느낌
+    setLeftTab('editor')
+  }
+
   return (
     <div className={styles.appShell}>
       <Header modelLabel={modelLabel} status={status} />
@@ -190,21 +199,50 @@ export default function App() {
 
       <div className={styles.app}>
         <div className={styles.left}>
-          <EditorPane
-            code={code}
-            lang={lang}
-            activeSample={activeSample}
-            busy={busy}
-            onCodeChange={(v) => {
-              setCode(v)
-              setActiveSample('')
-            }}
-            onLangChange={setLang}
-            onSample={setActiveSample}
-            onReview={handleReview}
-            onFix={handleFix}
-            onRun={handleRun}
-          />
+          <div className={styles.ltabs}>
+            <button
+              type="button"
+              className={`${styles.ltab} ${leftTab === 'editor' ? styles.lactive : ''}`}
+              onClick={() => setLeftTab('editor')}
+            >
+              📄 Editor
+            </button>
+            <button
+              type="button"
+              className={`${styles.ltab} ${leftTab === 'chat' ? styles.lactive : ''}`}
+              onClick={() => setLeftTab('chat')}
+            >
+              💬 Chat
+            </button>
+          </div>
+
+          {leftTab === 'editor' ? (
+            <EditorPane
+              code={code}
+              lang={lang}
+              activeSample={activeSample}
+              busy={busy}
+              onCodeChange={(v) => {
+                setCode(v)
+                setActiveSample('')
+              }}
+              onLangChange={setLang}
+              onSample={setActiveSample}
+              onReview={handleReview}
+              onFix={handleFix}
+              onRun={handleRun}
+            />
+          ) : (
+            <ChatPane
+              code={code}
+              lang={lang}
+              needKey={needKey}
+              onModelChange={onModelChange}
+              onApplyCode={applyFromChat}
+              onGoEditor={() => setLeftTab('editor')}
+            />
+          )}
+
           <ExecPanel
             open={execOpen}
             running={execRunning}

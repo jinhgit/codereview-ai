@@ -1,0 +1,67 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.box {
+  background: var(--bg2);
+  border: 1px solid var(--bd);
+  border-radius: 10px;
+  padding: 20px;
+  width: 280px;
+}
+
+.box h3 {
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.input {
+  width: 100%;
+  background: var(--bg3);
+  border: 1px solid var(--bd);
+  border-radius: 6px;
+  padding: 7px 10px;
+  font-size: 12px;
+  color: var(--tx);
+  outline: none;
+  margin-bottom: 10px;
+}
+
+.input:focus {
+  border-color: var(--ac);
+}
+
+.btns {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.ok {
+  background: var(--ac2);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.ok:hover {
+  opacity: 0.9;
+}
+
+.cancel {
+  background: var(--bg3);
+  color: var(--tx2);
+  border: 1px solid var(--bd);
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 11px;
+}

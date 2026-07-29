@@ -21,7 +21,7 @@ export function Header({ modelLabel, status }: Props) {
       <div className={styles.logo}>
         <div className={styles.logoIco}>⚡</div>
         <span>CodeReview AI</span>
-        <span className={styles.sub}>+ 오류수정 + 실행</span>
+        <span className={styles.sub}>+ 오류수정 + 챗봇 + 실행</span>
       </div>
       <div className={styles.right}>
         <span className={`${styles.bx} ${styles.model}`}>{modelLabel}</span>
