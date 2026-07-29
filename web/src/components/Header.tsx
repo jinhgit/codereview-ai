@@ -4,6 +4,7 @@ import styles from './Header.module.css'
 type Props = {
   modelLabel: string
   status: StatusKind
+  onCollab?: () => void
 }
 
 const STATUS: Record<StatusKind, { text: string; cls: string }> = {
@@ -14,18 +15,23 @@ const STATUS: Record<StatusKind, { text: string; cls: string }> = {
   error: { text: '● Error', cls: styles.err },
 }
 
-export function Header({ modelLabel, status }: Props) {
+export function Header({ modelLabel, status, onCollab }: Props) {
   const s = STATUS[status]
   return (
     <header className={styles.hdr}>
       <div className={styles.logo}>
         <div className={styles.logoIco}>⚡</div>
         <span>CodeReview AI</span>
-        <span className={styles.sub}>+ 오류수정 + 챗봇 + 실행</span>
+        <span className={styles.sub}>+ 오류수정 + 챗봇 + 협업</span>
       </div>
       <div className={styles.right}>
         <span className={`${styles.bx} ${styles.model}`}>{modelLabel}</span>
         <span className={`${styles.bx} ${s.cls}`}>{s.text}</span>
+        {onCollab && (
+          <button type="button" className={styles.collab} onClick={onCollab}>
+            🤝 협업
+          </button>
+        )}
       </div>
     </header>
   )

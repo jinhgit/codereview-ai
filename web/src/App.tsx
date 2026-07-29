@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 import { ChatPane } from './components/ChatPane'
+import { CollabPanel } from './components/collab/CollabPanel'
 import { EditorPane } from './components/EditorPane'
 import { ExecPanel } from './components/ExecPanel'
 import { FixPanel } from './components/FixPanel'
+import { GitHubPane } from './components/GitHubPane'
 import { Header } from './components/Header'
 import { KeyBanner } from './components/KeyBanner'
 import { OptimizeModal } from './components/OptimizeModal'
@@ -35,6 +37,7 @@ export default function App() {
   const [status, setStatus] = useState<StatusKind>('ready')
   const [leftTab, setLeftTab] = useState<LeftTab>('editor')
   const [rightTab, setRightTab] = useState<RightTab>('review')
+  const [collabOpen, setCollabOpen] = useState(false)
 
   const [reviewLoading, setReviewLoading] = useState(false)
   const [reviewError, setReviewError] = useState<string | null>(null)
@@ -188,7 +191,11 @@ export default function App() {
 
   return (
     <div className={styles.appShell}>
-      <Header modelLabel={modelLabel} status={status} />
+      <Header
+        modelLabel={modelLabel}
+        status={status}
+        onCollab={() => setCollabOpen(true)}
+      />
       <KeyBanner
         visible={showKeyBanner}
         onSaved={() => {
@@ -209,6 +216,13 @@ export default function App() {
             </button>
             <button
               type="button"
+              className={`${styles.ltab} ${leftTab === 'github' ? styles.lactive : ''}`}
+              onClick={() => setLeftTab('github')}
+            >
+              ⬡ GitHub
+            </button>
+            <button
+              type="button"
               className={`${styles.ltab} ${leftTab === 'chat' ? styles.lactive : ''}`}
               onClick={() => setLeftTab('chat')}
             >
@@ -216,7 +230,7 @@ export default function App() {
             </button>
           </div>
 
-          {leftTab === 'editor' ? (
+          {leftTab === 'editor' && (
             <EditorPane
               code={code}
               lang={lang}
@@ -232,7 +246,22 @@ export default function App() {
               onFix={handleFix}
               onRun={handleRun}
             />
-          ) : (
+          )}
+          {leftTab === 'github' && (
+            <GitHubPane
+              onLoaded={(text, guessed) => {
+                setCode(text)
+                setActiveSample('')
+                if (guessed) setLang(guessed)
+                else {
+                  const d = detectLang(text)
+                  if (d) setLang(d)
+                }
+                setLeftTab('editor')
+              }}
+            />
+          )}
+          {leftTab === 'chat' && (
             <ChatPane
               code={code}
               lang={lang}
@@ -307,6 +336,13 @@ export default function App() {
         result={optResult}
         onClose={() => setOptOpen(false)}
         onApply={applyCode}
+      />
+
+      <CollabPanel
+        open={collabOpen}
+        onClose={() => setCollabOpen(false)}
+        needKey={needKey}
+        onModelChange={onModelChange}
       />
     </div>
   )

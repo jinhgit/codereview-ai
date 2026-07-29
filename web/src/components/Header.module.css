@@ -71,3 +71,20 @@
   color: var(--rd);
   border-color: rgba(248, 81, 73, 0.3);
 }
+
+.collab {
+  background: linear-gradient(135deg, #1f6feb, #8a2be2);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.collab:hover {
+  opacity: 0.9;
+}

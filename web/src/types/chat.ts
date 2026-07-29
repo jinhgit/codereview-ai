@@ -36,4 +36,4 @@ export type ChatStore = {
   activeChatId: string | null
 }
 
-export type LeftTab = 'editor' | 'chat'
+export type LeftTab = 'editor' | 'github' | 'chat'
