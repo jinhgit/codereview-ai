@@ -1,0 +1,2583 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CodeReview AI</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d1117;--bg2:#161b22;--bg3:#21262d;
+  --bd:#30363d;--bd2:#444c56;--tx:#e6edf3;--tx2:#8b949e;
+  --ac:#58a6ff;--ac2:#1f6feb;
+  --gn:#3fb950;--gnb:#0f2a1a;
+  --am:#d29922;--amb:#2a1f00;
+  --rd:#f85149;--rdb:#2a0a0a;
+  --pu:#bc8cff;--gr:#f55036;
+  --mono:'JetBrains Mono','Fira Code',monospace;
+}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--tx);display:flex;flex-direction:column}
+
+/* HEADER */
+.hdr{background:var(--bg2);border-bottom:1px solid var(--bd);padding:0 18px;height:50px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.logo{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600}
+.logo-ico{width:26px;height:26px;background:linear-gradient(135deg,#f55036,#ff8c42);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px}
+.bx{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:500;border:1px solid}
+.bx-b{background:rgba(88,166,255,.12);color:var(--ac);border-color:rgba(88,166,255,.3)}
+.bx-g{background:var(--gnb);color:var(--gn);border-color:rgba(63,185,80,.3)}
+.bx-a{background:var(--amb);color:var(--am);border-color:rgba(210,153,34,.3)}
+.bx-gr{background:rgba(245,80,54,.1);color:var(--gr);border-color:rgba(245,80,54,.3)}
+
+/* KEY BANNER */
+#key-banner{background:#1a0d0a;border-bottom:1px solid rgba(245,80,54,.4);padding:9px 18px;display:flex;align-items:center;gap:10px;font-size:11px;flex-shrink:0;flex-wrap:wrap}
+#key-banner.hidden{display:none}
+.key-input{flex:1;min-width:200px;background:var(--bg);border:1px solid rgba(245,80,54,.5);border-radius:6px;padding:6px 11px;font-size:12px;color:var(--tx);font-family:var(--mono);outline:none}
+.key-input:focus{border-color:var(--gr)}
+.key-btn{background:var(--gr);color:#fff;border:none;border-radius:6px;padding:6px 16px;font-size:11px;font-weight:700;cursor:pointer}
+.key-btn:hover{opacity:.85}
+.key-hint{color:#ff8c72;font-size:11px}
+
+/* LAYOUT */
+.app{display:grid;grid-template-columns:1fr 1fr;flex:1;overflow:hidden;min-height:0;height:0}
+.left{display:flex;flex-direction:column;border-right:1px solid var(--bd);overflow:hidden;min-height:0;flex:1}
+.ph{padding:9px 14px;background:var(--bg2);border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.pt{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--tx2)}
+.lsel{background:var(--bg3);border:1px solid var(--bd);border-radius:5px;padding:3px 7px;font-size:10px;color:var(--tx2);outline:none;cursor:pointer}
+.ltabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--bd);flex-shrink:0}
+.ltab{padding:8px 13px;font-size:11px;cursor:pointer;color:var(--tx2);border-bottom:2px solid transparent;transition:all .15s;user-select:none;white-space:nowrap}
+.ltab:hover{color:var(--tx)}.ltab.active{color:var(--ac);border-bottom-color:var(--ac)}
+
+/* EDITOR */
+.pane{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0}
+.ew{flex:1;display:flex;overflow:hidden;font-family:var(--mono);font-size:12px;line-height:1.65;min-height:0}
+.lnums{padding:13px 0;background:var(--bg);border-right:1px solid var(--bd);text-align:right;color:var(--tx2);font-size:12px;line-height:1.65;min-width:42px;user-select:none;overflow:hidden;flex-shrink:0;display:flex;flex-direction:column;gap:0}
+.lnums span{display:block;padding:0 8px 0 0;height:calc(1.65em);min-height:calc(1.65em);box-sizing:border-box;white-space:nowrap}
+.cta{flex:1;background:var(--bg);color:var(--tx);border:none;outline:none;padding:13px 13px 13px 8px;font-family:var(--mono);font-size:12px;line-height:1.65;resize:none;overflow:auto;white-space:pre;tab-size:2}
+.cta::placeholder{color:var(--tx2);opacity:.5}
+.bbar{padding:9px 13px;background:var(--bg2);border-top:1px solid var(--bd);flex-shrink:0}
+.chips{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:7px}
+.chip{padding:2px 8px;border-radius:4px;font-size:10px;background:var(--bg3);border:1px solid var(--bd);color:var(--tx2);cursor:pointer;transition:all .15s;font-family:var(--mono)}
+.chip:hover{border-color:var(--ac);color:var(--ac);background:rgba(88,166,255,.08)}
+.chip.on{border-color:var(--ac);color:var(--ac);background:rgba(88,166,255,.12)}
+.btn-row{display:flex;gap:7px}
+.run-btn{background:linear-gradient(135deg,#f55036,#ff8c42);color:#fff;border:none;border-radius:7px;padding:8px;flex:1;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:opacity .15s}
+.run-btn:hover{opacity:.9}.run-btn:disabled{opacity:.4;cursor:not-allowed}
+.fix-btn{background:linear-gradient(135deg,#1f6feb,#8a2be2);color:#fff;border:none;border-radius:7px;padding:8px;flex:1;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:opacity .15s}
+.fix-btn:hover{opacity:.9}.fix-btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* ── 컴파일러 ── */
+.exec-btn{background:linear-gradient(135deg,#3fb950,#1a8a35);color:#fff;border:none;border-radius:7px;padding:7px 13px;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:opacity .15s;white-space:nowrap}
+.exec-btn:hover{opacity:.9}.exec-btn:disabled{opacity:.4;cursor:not-allowed}
+.exec-btn span{font-size:12px}
+
+/* 패널 레이아웃 */
+.exec-panel{flex-shrink:0;display:flex;flex-direction:column;overflow:hidden;transition:height .28s cubic-bezier(.4,0,.2,1);height:0;border-top:2px solid transparent}
+.exec-panel.closed{height:0;border-top:2px solid transparent}
+.exec-panel.open{height:240px;border-top:2px solid #3fb950}
+
+/* 헤더 */
+.exec-hdr{padding:7px 12px;background:#0d1f14;border-bottom:1px solid rgba(63,185,80,.2);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.exec-hdr-left{display:flex;align-items:center;gap:8px}
+.exec-hdr-icon{font-size:11px;width:20px;height:20px;background:#3fb950;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;flex-shrink:0}
+.exec-hdr-title{font-size:11px;font-weight:600;color:#e6edf3}
+.exec-status{font-size:9px;padding:1px 7px;border-radius:8px;font-weight:600;border:1px solid}
+.exec-status.idle{background:rgba(139,148,158,.1);color:#8b949e;border-color:rgba(139,148,158,.25)}
+.exec-status.running{background:rgba(210,153,34,.15);color:#d29922;border-color:rgba(210,153,34,.4);animation:pulse .8s ease-in-out infinite}
+.exec-status.success{background:rgba(63,185,80,.15);color:#3fb950;border-color:rgba(63,185,80,.35)}
+.exec-status.error{background:rgba(248,81,73,.12);color:#f85149;border-color:rgba(248,81,73,.35)}
+.exec-time{font-size:9px;color:#8b949e;font-family:var(--mono)}
+.exec-hdr-right{display:flex;align-items:center;gap:4px}
+.exec-tool-btn{background:none;border:none;color:#8b949e;font-size:12px;cursor:pointer;padding:3px 6px;border-radius:4px;line-height:1;transition:all .15s}
+.exec-tool-btn:hover{background:rgba(255,255,255,.08);color:#e6edf3}
+.exec-close{font-size:11px}
+
+/* stdin */
+.exec-stdin{padding:5px 12px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:8px;background:var(--bg2);flex-shrink:0}
+.exec-stdin-label{font-size:9px;color:var(--tx2);font-weight:700;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;padding:2px 6px;background:var(--bg3);border-radius:4px;border:1px solid var(--bd)}
+.stdin-input{flex:1;background:var(--bg);border:1px solid var(--bd);border-radius:5px;padding:4px 9px;font-size:11px;color:var(--tx);font-family:var(--mono);outline:none;transition:border-color .15s}
+.stdin-input:focus{border-color:var(--gn);box-shadow:0 0 0 2px rgba(63,185,80,.12)}
+
+/* 출력 영역 */
+.exec-output{flex:1;overflow-y:auto;background:#010409;padding:0}
+.exec-output::-webkit-scrollbar{width:5px}
+.exec-output::-webkit-scrollbar-thumb{background:#30363d;border-radius:2px}
+.out-empty{display:block;padding:24px 16px;color:#8b949e;font-size:11px;font-style:italic;text-align:center}
+.out-section{border-bottom:1px solid #1c2128;padding:10px 14px}
+.out-section:last-of-type{border-bottom:none}
+.out-section-ok{background:rgba(63,185,80,.03)}
+.out-section-err{background:rgba(248,81,73,.03)}
+.out-section-warn{background:rgba(210,153,34,.03)}
+.out-sec-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;display:flex;align-items:center;gap:5px;color:#8b949e}
+.out-sec-body{font-family:var(--mono);font-size:12px;line-height:1.7;white-space:pre-wrap;word-break:break-all}
+.out-sec-body.stdout{color:#e6edf3}
+.out-sec-body.stderr{color:#ff7b72}
+.out-footer{padding:7px 14px;font-size:10px;color:#8b949e;background:#0d1117;border-top:1px solid #1c2128;display:flex;align-items:center;gap:6px;flex-shrink:0;font-family:var(--mono)}
+.out-lang-badge{background:#21262d;color:#8b949e;padding:1px 6px;border-radius:4px;font-size:9px;border:1px solid #30363d}
+.out-loading{display:flex;align-items:center;gap:12px;padding:24px 16px}
+.out-spin{width:18px;height:18px;border:2px solid #30363d;border-top-color:#3fb950;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+.out-load-title{font-size:12px;font-weight:500;color:#e6edf3;margin-bottom:3px}
+.out-load-sub{font-size:10px;color:#8b949e}
+.out-nosupport{display:flex;align-items:center;gap:12px;padding:24px 16px}
+.out-ico{font-size:24px}
+.out-title{font-size:12px;font-weight:600;color:#e6edf3;margin-bottom:3px}
+.out-desc{font-size:10px;color:#8b949e}
+.out-empty-result{display:flex;align-items:center;gap:10px;padding:20px 16px}
+.spin{width:11px;height:11px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* CHAT LAYOUT */
+.chat-pane{flex:1;display:flex;overflow:hidden;min-height:0}
+.chat-sb{width:175px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--bd);display:flex;flex-direction:column;overflow:hidden}
+.chat-sb-top{padding:8px 10px;border-bottom:1px solid var(--bd);display:flex;flex-direction:column;gap:5px;flex-shrink:0}
+.new-chat-btn{width:100%;background:linear-gradient(135deg,#1f6feb,#8a2be2);color:#fff;border:none;border-radius:6px;padding:6px 8px;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;justify-content:center;transition:opacity .15s}
+.new-chat-btn:hover{opacity:.88}
+.new-proj-btn{width:100%;background:var(--bg3);color:var(--tx2);border:1px solid var(--bd);border-radius:6px;padding:5px 8px;font-size:10px;cursor:pointer;display:flex;align-items:center;gap:5px;justify-content:center;transition:all .15s}
+.new-proj-btn:hover{border-color:var(--ac);color:var(--ac)}
+.chat-sb-body{flex:1;overflow-y:auto;padding:6px 0}
+.chat-sb-body::-webkit-scrollbar{width:3px}
+.chat-sb-body::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px}
+.sb-lbl{padding:5px 10px 3px;font-size:9px;font-weight:600;color:var(--tx2);text-transform:uppercase;letter-spacing:.05em;opacity:.6}
+.proj-hdr{padding:5px 10px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
+.proj-lbl{font-size:10px;font-weight:600;color:var(--tx2);display:flex;align-items:center;gap:5px}
+.proj-arr{font-size:9px;color:var(--tx2);transition:transform .2s;display:inline-block}
+.proj-arr.op{transform:rotate(90deg)}
+.proj-items{overflow:hidden;max-height:0;transition:max-height .25s ease}
+.proj-items.op{max-height:600px}
+.proj-acts{padding:3px 10px 5px;display:flex;gap:4px}
+.proj-act{font-size:9px;padding:2px 7px;border-radius:4px;background:var(--bg3);border:1px solid var(--bd);color:var(--tx2);cursor:pointer}
+.proj-act:hover{border-color:var(--am);color:var(--am)}
+.chat-item{padding:5px 10px;cursor:pointer;border-radius:5px;margin:1px 5px;transition:background .15s;display:flex;align-items:center;justify-content:space-between;gap:4px}
+.chat-item:hover{background:var(--bg3)}
+.chat-item.active{background:var(--bg3);border-left:2px solid var(--ac)}
+.chat-item-title{font-size:10.5px;color:var(--tx2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.chat-item.active .chat-item-title{color:var(--tx)}
+.chat-item-del{font-size:10px;color:var(--tx2);opacity:0;background:none;border:none;cursor:pointer;padding:1px 4px;border-radius:3px;flex-shrink:0}
+.chat-item:hover .chat-item-del{opacity:1}
+.chat-item-del:hover{background:var(--rdb);color:var(--rd)}
+
+/* CHAT MAIN */
+.chat-main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0}
+.chat-main-hdr{padding:7px 12px;background:var(--bg2);border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.chat-main-title{font-size:11px;font-weight:600;color:var(--tx);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.chat-proj-badge{font-size:9px;color:var(--tx2);padding:2px 6px;background:var(--bg3);border-radius:4px;border:1px solid var(--bd);white-space:nowrap}
+.chat-msgs{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.chat-msgs::-webkit-scrollbar{width:4px}
+.chat-msgs::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px}
+.cmsg{display:flex;flex-direction:column;gap:3px;animation:fadeIn .2s ease}
+.cmsg.user{align-items:flex-end}.cmsg.bot{align-items:flex-start}
+.cbub{max-width:90%;padding:8px 11px;border-radius:10px;font-size:11px;line-height:1.6;word-break:break-word}
+.cbub.user{background:linear-gradient(135deg,#1f6feb,#8a2be2);color:#fff;border-radius:10px 10px 3px 10px}
+.cbub.bot{background:var(--bg2);color:var(--tx);border:1px solid var(--bd);border-radius:10px 10px 10px 3px}
+.cbub pre{background:rgba(0,0,0,.35);border-radius:5px;padding:7px 9px;font-family:var(--mono);font-size:10px;overflow-x:auto;white-space:pre;margin-top:6px;line-height:1.5;color:#a5d6ff}
+.cbub code{font-family:var(--mono);font-size:10px;background:rgba(0,0,0,.3);padding:1px 4px;border-radius:3px}
+.ctime{font-size:9px;color:var(--tx2);padding:0 2px}
+.capply{display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border-radius:5px;font-size:10px;background:var(--gnb);color:var(--gn);border:1px solid rgba(63,185,80,.35);cursor:pointer;margin-top:5px}
+.capply:hover{background:rgba(63,185,80,.15)}
+.cdot{width:5px;height:5px;border-radius:50%;background:var(--tx2);animation:cdot 1.2s ease-in-out infinite}
+.cdot:nth-child(2){animation-delay:.2s}.cdot:nth-child(3){animation-delay:.4s}
+@keyframes cdot{0%,80%,100%{opacity:.3;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
+.chat-iw{padding:8px 10px;background:var(--bg2);border-top:1px solid var(--bd);flex-shrink:0}
+.chat-suggs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px}
+.chat-sugg{padding:2px 7px;border-radius:10px;font-size:9.5px;background:var(--bg3);border:1px solid var(--bd);color:var(--tx2);cursor:pointer;transition:all .15s;white-space:nowrap}
+.chat-sugg:hover{border-color:var(--ac);color:var(--ac)}
+.chat-ir{display:flex;gap:6px;align-items:flex-end}
+.chat-ta{flex:1;background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:7px 10px;font-size:11px;color:var(--tx);font-family:inherit;outline:none;resize:none;min-height:34px;max-height:100px;line-height:1.5;transition:border-color .15s;overflow:hidden}
+.chat-ta:focus{border-color:var(--ac)}
+.chat-ta::placeholder{color:var(--tx2);opacity:.6}
+.csend{width:34px;height:34px;background:linear-gradient(135deg,#1f6feb,#8a2be2);border:none;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;color:#fff;transition:opacity .15s}
+.csend:hover{opacity:.85}.csend:disabled{opacity:.4;cursor:not-allowed}
+
+/* RIGHT */
+.right{display:flex;flex-direction:column;overflow:hidden;background:var(--bg);min-height:0;flex:1}
+.rtabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--bd);flex-shrink:0}
+.rtab{padding:9px 14px;font-size:11px;cursor:pointer;color:var(--tx2);border-bottom:2px solid transparent;transition:all .15s;user-select:none;display:flex;align-items:center;gap:5px}
+.rtab:hover{color:var(--tx)}.rtab.active{color:var(--ac);border-bottom-color:var(--ac)}
+.rdot{width:6px;height:6px;border-radius:50%;background:var(--rd);display:none}
+.rdot.show{display:block}
+
+/* EVAL */
+.eval-banner{padding:12px 14px;border-bottom:1px solid var(--bd);flex-shrink:0}
+.eval-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.eval-badge{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;flex-shrink:0}
+.eg-A{background:rgba(63,185,80,.15);color:#3fb950;border:1.5px solid rgba(63,185,80,.4)}
+.eg-B{background:rgba(88,166,255,.15);color:#58a6ff;border:1.5px solid rgba(88,166,255,.4)}
+.eg-C{background:rgba(210,153,34,.15);color:#d29922;border:1.5px solid rgba(210,153,34,.4)}
+.eg-D,.eg-F{background:rgba(248,81,73,.12);color:#f85149;border:1.5px solid rgba(248,81,73,.3)}
+.eval-desc{font-size:11px;color:var(--tx2);line-height:1.6;padding:8px 10px;background:var(--bg3);border-radius:6px;border-left:3px solid var(--eac,var(--ac))}
+
+/* SCORE CARDS */
+.sc-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:10px 12px;background:var(--bg);border-bottom:1px solid var(--bd)}
+.sc-card{background:var(--bg2);border:1px solid var(--bd);border-radius:8px;cursor:pointer;transition:border-color .15s;overflow:hidden}
+.sc-card:hover{border-color:var(--bd2)}
+.sc-card.active{border-color:var(--cc,var(--ac))}
+.sc-top{padding:9px 11px;display:flex;align-items:center;justify-content:space-between}
+.sc-ico{width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px}
+.sc-lbl{font-size:10px;color:var(--tx2);font-weight:500}
+.sc-val{font-size:18px;font-weight:700;line-height:1}
+.sc-bar{height:3px;background:var(--bg3);margin:0 11px 9px}
+.sc-fill{height:100%;border-radius:2px;transition:width .9s cubic-bezier(.4,0,.2,1)}
+.sc-body{overflow:hidden;max-height:0;transition:max-height .3s ease}
+.sc-body.open{max-height:600px}
+.sc-inner{padding:10px 11px;border-top:1px solid var(--bd)}
+.sc-reason{font-size:10.5px;color:var(--tx2);line-height:1.6;margin-bottom:8px}
+.sc-tip{display:flex;align-items:flex-start;gap:7px;padding:6px 8px;background:var(--bg3);border-radius:5px;border-left:2px solid var(--cc,var(--ac));margin-bottom:5px}
+.sc-tip:last-child{margin-bottom:0}
+.sc-tip-body{font-size:10px;color:var(--tx2);line-height:1.5}
+.sc-tip-code{margin-top:4px;background:var(--bg);border-radius:3px;padding:4px 6px;font-family:var(--mono);font-size:9.5px;color:#a5d6ff;white-space:pre;overflow-x:auto}
+
+/* OPT BUTTON */
+.opt-wrap{padding:10px 14px;border-bottom:1px solid var(--bd);background:rgba(248,81,73,.04);flex-shrink:0}
+.opt-btn{width:100%;background:linear-gradient(135deg,#f55036,#c0392b);color:#fff;border:none;border-radius:7px;padding:9px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:opacity .15s}
+.opt-btn:hover{opacity:.9}.opt-btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* REVIEW CONTENT */
+.rv{flex:1;overflow-y:auto;min-height:0}
+.rv::-webkit-scrollbar{width:5px}
+.rv::-webkit-scrollbar-track{background:var(--bg)}
+.rv::-webkit-scrollbar-thumb{background:var(--bd);border-radius:3px}
+.rsec{border-bottom:1px solid var(--bd)}
+.rsh{padding:9px 13px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;background:var(--bg2);user-select:none;transition:background .15s}
+.rsh:hover{background:var(--bg3)}
+.rst{display:flex;align-items:center;gap:6px}
+.ri{width:22px;height:22px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:11px}
+.ri-s{background:rgba(88,166,255,.15)}.ri-c{background:rgba(188,140,255,.15)}
+.ri-b{background:rgba(248,81,73,.15)}.ri-r{background:rgba(63,185,80,.15)}
+.ri-a{background:rgba(57,210,192,.15)}.ri-d{background:rgba(210,153,34,.15)}
+.rtt{font-size:11px;font-weight:600}
+.cnt{font-size:9px;padding:1px 6px;border-radius:7px;font-weight:600}
+.c-b{background:rgba(88,166,255,.15);color:var(--ac)}.c-r{background:var(--rdb);color:var(--rd)}
+.c-g{background:var(--gnb);color:var(--gn)}.c-a{background:var(--amb);color:var(--am)}
+.chv{color:var(--tx2);font-size:11px;transition:transform .2s}
+.chv.op{transform:rotate(90deg)}
+.sbd{overflow:hidden;transition:max-height .35s ease}
+.fi{padding:9px 13px;border-bottom:1px solid rgba(48,54,61,.45);display:flex;gap:7px;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+.fi:last-child{border-bottom:none}
+.fv{width:3px;border-radius:2px;flex-shrink:0;align-self:stretch;min-height:12px}
+.fv-e{background:var(--rd)}.fv-w{background:var(--am)}.fv-i{background:var(--ac)}.fv-s{background:var(--gn)}
+.fb{flex:1;min-width:0}
+.ft{font-size:11px;font-weight:500;margin-bottom:3px;line-height:1.4}
+.fd{font-size:10.5px;color:var(--tx2);line-height:1.55;white-space:pre-wrap}
+.fc{margin-top:6px;background:#010409;border:1px solid var(--bd);border-radius:5px;padding:7px 9px;font-family:var(--mono);font-size:10.5px;color:#a5d6ff;overflow-x:auto;white-space:pre;line-height:1.5}
+.bigo{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:5px;font-family:var(--mono);font-size:10.5px;font-weight:600;border:1px solid}
+.bg-good{background:var(--gnb);color:var(--gn);border-color:rgba(63,185,80,.3)}
+.bg-ok{background:var(--amb);color:var(--am);border-color:rgba(210,153,34,.3)}
+.bg-bad{background:var(--rdb);color:var(--rd);border-color:rgba(248,81,73,.3)}
+.cxv{padding:10px 13px;background:var(--bg)}
+.fix-hdr{padding:10px 14px;background:var(--bg2);border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between}
+.copybtn{padding:4px 10px;border-radius:5px;font-size:10px;background:var(--bg3);color:var(--tx2);border:1px solid var(--bd);cursor:pointer}
+.copybtn:hover{border-color:var(--gn);color:var(--gn)}
+.applybtn{padding:4px 10px;border-radius:5px;font-size:10px;background:var(--gnb);color:var(--gn);border:1px solid rgba(63,185,80,.4);cursor:pointer;font-weight:600}
+.applybtn:hover{background:rgba(63,185,80,.2)}
+
+/* STATES */
+.empty{padding:40px 16px;text-align:center;color:var(--tx2)}
+.empty-i{font-size:36px;margin-bottom:10px;opacity:.3}
+.empty-t{font-size:13px;font-weight:500;margin-bottom:7px}
+.empty-d{font-size:11px;line-height:1.8}
+.step-box{display:inline-flex;flex-direction:column;gap:5px;text-align:left;margin-top:8px;padding:10px 14px;background:var(--bg2);border-radius:7px;border:1px solid var(--bd)}
+.step{display:flex;align-items:center;gap:7px;font-size:10.5px;color:var(--tx2)}
+.step-n{width:17px;height:17px;border-radius:50%;background:var(--gr);color:#fff;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.loading{padding:30px 16px;display:flex;flex-direction:column;align-items:center;gap:12px}
+.big-sp{width:28px;height:28px;border:2.5px solid var(--bd);border-top-color:var(--gr);border-radius:50%;animation:spin .8s linear infinite}
+.big-sp.blue{border-top-color:var(--ac)}
+.lsteps{display:flex;flex-direction:column;gap:5px;width:100%;max-width:220px}
+.lstep{display:flex;align-items:center;gap:7px;font-size:10px;color:var(--tx2)}
+.sd{width:5px;height:5px;border-radius:50%;background:var(--bd)}
+.sd.done{background:var(--gn)}.sd.active{background:var(--gr);animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.err-box{margin:12px;padding:11px 13px;background:var(--rdb);border:1px solid rgba(248,81,73,.3);border-radius:7px;font-size:11px;color:var(--rd);line-height:1.8}
+.err-box a{color:var(--ac)}
+.ok-box{margin:12px;padding:11px 13px;background:var(--gnb);border:1px solid rgba(63,185,80,.3);border-radius:7px;font-size:11px;color:var(--gn);line-height:1.8}
+
+/* OPT MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:999;display:none;align-items:center;justify-content:center;padding:16px}
+.overlay.show{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--bd);border-radius:12px;width:100%;max-width:720px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;animation:slideUp .25s ease}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+.modal-hdr{padding:14px 16px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.modal-x{background:none;border:none;color:var(--tx2);font-size:18px;cursor:pointer;padding:0 4px;line-height:1}
+.modal-x:hover{color:var(--tx)}
+.modal-body{flex:1;overflow-y:auto;min-height:0}
+.modal-body::-webkit-scrollbar{width:5px}
+.modal-body::-webkit-scrollbar-thumb{background:var(--bd);border-radius:3px}
+.modal-footer{padding:12px 16px;border-top:1px solid var(--bd);display:flex;gap:8px;flex-shrink:0;background:var(--bg2)}
+.opt-apply{flex:1;background:linear-gradient(135deg,#1f6feb,#3fb950);color:#fff;border:none;border-radius:7px;padding:9px;font-size:12px;font-weight:700;cursor:pointer}
+.opt-apply:hover{opacity:.9}
+.opt-cancel{padding:9px 20px;background:var(--bg3);color:var(--tx2);border:1px solid var(--bd);border-radius:7px;font-size:12px;cursor:pointer}
+.opt-cancel:hover{background:var(--bd)}
+.ochange{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid rgba(48,54,61,.4)}
+.ochange:last-child{border-bottom:none}
+.oct{font-size:9px;padding:2px 6px;border-radius:4px;font-weight:600;flex-shrink:0;margin-top:1px}
+.oct-fix{background:var(--rdb);color:var(--rd)}
+.oct-improve{background:rgba(88,166,255,.15);color:var(--ac)}
+.oct-style{background:rgba(210,153,34,.15);color:var(--am)}
+
+/* PROJECT NAME MODAL */
+.pm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:none;align-items:center;justify-content:center}
+.pm-overlay.show{display:flex}
+.pm-box{background:var(--bg2);border:1px solid var(--bd);border-radius:10px;padding:20px;width:280px}
+.pm-box h3{font-size:13px;margin-bottom:12px}
+.pm-input{width:100%;background:var(--bg3);border:1px solid var(--bd);border-radius:6px;padding:7px 10px;font-size:12px;color:var(--tx);outline:none;margin-bottom:10px}
+.pm-input:focus{border-color:var(--ac)}
+.pm-btns{display:flex;gap:6px;justify-content:flex-end}
+.pm-ok{background:var(--ac2);color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:11px;font-weight:600;cursor:pointer}
+.pm-ok:hover{opacity:.9}
+.pm-cancel{background:var(--bg3);color:var(--tx2);border:1px solid var(--bd);border-radius:6px;padding:6px 14px;font-size:11px;cursor:pointer}
+
+@media(max-width:720px){
+  .app{grid-template-columns:1fr;grid-template-rows:55vh 45vh}
+  .left{border-right:none;border-bottom:1px solid var(--bd)}
+}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="logo">
+    <div class="logo-ico">⚡</div>
+    <span>CodeReview AI</span>
+    <span style="font-size:10px;color:var(--tx2);font-weight:400">+ 오류수정 + 챗봇</span>
+  </div>
+  <div style="display:flex;gap:6px;align-items:center">
+    <span class="bx bx-gr" id="model-badge">Llama 3.3 70B</span>
+    <span class="bx bx-g" id="sbadge">● Ready</span>
+    <button id="collab-toggle-btn" style="background:linear-gradient(135deg,#1f6feb,#8a2be2);color:#fff;border:none;border-radius:6px;padding:5px 12px;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;transition:opacity .15s">🤝 협업</button>
+  </div>
+</header>
+
+<div id="key-banner">
+  <span class="key-hint">⚡ Groq API Key:</span>
+  <input class="key-input" id="groq-key" type="password" placeholder="gsk_...">
+  <button class="key-btn" id="save-key-btn">저장</button>
+  <span class="key-hint">무료 발급 → <a href="https://console.groq.com/keys" target="_blank" style="color:#ff8c42;font-weight:700">console.groq.com/keys</a></span>
+</div>
+
+<div class="app">
+  <div class="left">
+    <div class="ph">
+      <span class="pt">Code Editor</span>
+      <select class="lsel" id="lsel">
+        <option value="python">Python</option>
+        <option value="javascript">JavaScript</option>
+        <option value="typescript">TypeScript</option>
+        <option value="java">Java</option>
+        <option value="c">C</option>
+        <option value="cpp">C++</option>
+        <option value="go">Go</option>
+        <option value="rust">Rust</option>
+        <option value="sql">SQL</option>
+      </select>
+    </div>
+    <div class="ltabs">
+      <div class="ltab active" id="lt-editor">📄 Editor</div>
+      <div class="ltab" id="lt-github">⬡ GitHub</div>
+      <div class="ltab" id="lt-chat">💬 Chat</div>
+    </div>
+
+    <!-- EDITOR PANE -->
+    <div id="lp-editor" class="pane">
+      <div class="ew">
+        <div class="lnums" id="lnums"><span>1</span></div>
+        <textarea class="cta" id="cta" spellcheck="false" placeholder="코드를 입력하거나 샘플을 선택하세요..."></textarea>
+      </div>
+      <div class="bbar">
+        <div class="chips" id="chips-wrap">
+          <span class="chip" data-s="split">split 예제</span>
+          <span class="chip" data-s="bubble">버블정렬</span>
+          <span class="chip" data-s="fib">피보나치</span>
+          <span class="chip" data-s="bsearch">이진탐색</span>
+          <span class="chip" data-s="linked">연결리스트</span>
+          <span class="chip on" data-s="buggy">버그코드</span>
+          <span class="chip" data-s="syntax">문법오류</span>
+        </div>
+        <div class="btn-row">
+          <button class="run-btn" id="runbtn">⚡ 코드 리뷰</button>
+          <button class="fix-btn" id="fixbtn">🔧 오류 수정</button>
+          <button class="exec-btn" id="execbtn"><span>▶</span> 실행</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- GITHUB PANE -->
+    <div id="lp-github" class="pane" style="display:none">
+      <div style="flex:1;padding:13px;display:flex;flex-direction:column;gap:8px;overflow-y:auto">
+        <div style="font-size:11px;color:var(--tx2);font-weight:500">GitHub 파일 URL</div>
+        <div style="display:flex;gap:6px">
+          <input id="ghurl" style="flex:1;background:var(--bg2);border:1px solid var(--bd);border-radius:6px;padding:7px 10px;font-size:11px;color:var(--tx);font-family:var(--mono);outline:none" placeholder="https://github.com/user/repo/blob/main/file.py">
+          <button id="gh-load-btn" style="padding:6px 12px;border-radius:6px;font-size:11px;background:var(--bg3);color:var(--tx);border:1px solid var(--bd);cursor:pointer">불러오기</button>
+        </div>
+        <input id="ghtok" style="background:var(--bg2);border:1px solid var(--bd);border-radius:6px;padding:7px 10px;font-size:11px;color:var(--tx);font-family:var(--mono);outline:none;width:100%" placeholder="GitHub Token (선택)">
+        <button class="run-btn" id="gh-load-btn2" style="flex:none;width:100%">📥 GitHub 코드 불러오기</button>
+      </div>
+    </div>
+
+    <!-- CHAT PANE -->
+    <div id="lp-chat" class="chat-pane" style="display:none">
+      <div class="chat-sb">
+        <div class="chat-sb-top">
+          <button class="new-chat-btn" id="new-chat-btn">✚ 새 채팅</button>
+          <button class="new-proj-btn" id="new-proj-btn">📁 + 프로젝트</button>
+        </div>
+        <div class="chat-sb-body" id="chat-sb-body"></div>
+      </div>
+      <div class="chat-main">
+        <div class="chat-main-hdr">
+          <span class="chat-main-title" id="chat-main-title">새 채팅</span>
+          <span class="chat-proj-badge" id="chat-proj-badge" style="display:none"></span>
+        </div>
+        <div class="chat-msgs" id="chat-msgs"></div>
+        <div class="chat-iw">
+          <div class="chat-suggs">
+            <span class="chat-sugg" data-q="버블정렬 구현해줘">버블정렬</span>
+            <span class="chat-sugg" data-q="현재 코드 설명해줘">코드 설명</span>
+            <span class="chat-sugg" data-q="이 코드를 더 빠르게 최적화해줘">최적화</span>
+            <span class="chat-sugg" data-q="이진탐색 구현해줘">이진탐색</span>
+            <span class="chat-sugg" data-q="LinkedList 클래스 구현해줘">LinkedList</span>
+          </div>
+          <div class="chat-ir">
+            <textarea class="chat-ta" id="chat-input" placeholder="코드 구현 요청이나 질문을 입력하세요..." rows="1"></textarea>
+            <button class="csend" id="chat-send-btn">▶</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 실행 결과 패널 (left 하단 고정) -->
+    <div class="exec-panel closed" id="exec-panel">
+      <div class="exec-hdr">
+        <div class="exec-hdr-left">
+          <span class="exec-hdr-icon">▶</span>
+          <span class="exec-hdr-title">실행 결과</span>
+          <span class="exec-status idle" id="exec-status">대기</span>
+          <span class="exec-time" id="exec-time"></span>
+        </div>
+        <div class="exec-hdr-right">
+          <button id="exec-copy-btn" class="exec-tool-btn" title="결과 복사">📋</button>
+          <button id="exec-clear-btn" class="exec-tool-btn" title="지우기">🗑</button>
+          <button id="exec-close-btn" class="exec-tool-btn exec-close" title="닫기">✕</button>
+        </div>
+      </div>
+      <div class="exec-stdin">
+        <label class="exec-stdin-label" for="stdin-input">stdin</label>
+        <input class="stdin-input" id="stdin-input" placeholder="표준 입력값 (input() 등에 사용)">
+      </div>
+      <div class="exec-output" id="exec-output">
+        <span class="out-empty">▶ 실행 버튼을 누르면 여기에 결과가 출력됩니다</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="right">
+    <div class="rtabs">
+      <div class="rtab active" id="rt-review">📋 코드 리뷰</div>
+      <div class="rtab" id="rt-fix">🔧 오류 수정 <div class="rdot" id="fix-dot"></div></div>
+    </div>
+    <div id="rp-review" style="display:flex;flex-direction:column;flex:1;overflow:hidden;min-height:0">
+      <div id="eval-banner" style="display:none" class="eval-banner">
+        <div class="eval-row">
+          <div class="eval-badge" id="eval-badge">-</div>
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:600" id="eval-title">-</div>
+            <div style="display:flex;align-items:baseline;gap:6px;margin-top:3px">
+              <span style="font-size:30px;font-weight:700;line-height:1" id="tsc">--</span>
+              <span style="font-size:10px;color:var(--tx2)">/ 100</span>
+              <span id="sgrade" style="font-size:16px">-</span>
+            </div>
+          </div>
+        </div>
+        <div class="eval-desc" id="eval-desc"></div>
+        <div style="font-size:9px;color:var(--tx2);margin-top:6px;opacity:.7">▼ 항목 클릭 시 이유 및 최적화 방법</div>
+      </div>
+      <div id="opt-wrap" style="display:none" class="opt-wrap">
+        <div style="font-size:10px;color:var(--rd);margin-bottom:5px;font-weight:600">⚠️ 60점 미만 — AI가 자동으로 코드를 최적화해드립니다</div>
+        <button class="opt-btn" id="opt-btn">🚀 AI 자동 최적화 실행</button>
+      </div>
+      <div id="score-cards" style="display:none"></div>
+      <div class="rv" id="rc">
+        <div class="empty">
+          <div class="empty-i">⚡</div>
+          <div class="empty-t">Groq API 키 입력 후 시작</div>
+          <div class="empty-d">
+            <div class="step-box">
+              <div class="step"><div class="step-n">1</div><span><a href="https://console.groq.com" target="_blank" style="color:var(--ac)">console.groq.com</a> 가입 (무료)</span></div>
+              <div class="step"><div class="step-n">2</div><span>API Keys → Create API Key</span></div>
+              <div class="step"><div class="step-n">3</div><span><strong style="color:var(--gr)">gsk_...</strong> 키를 상단에 입력</span></div>
+              <div class="step"><div class="step-n">4</div><span>⚡ 코드 리뷰 또는 🔧 오류 수정</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="rp-fix" style="display:none;flex-direction:column;flex:1;overflow:hidden;min-height:0">
+      <div class="rv" id="fix-content">
+        <div class="empty">
+          <div class="empty-i">🔧</div>
+          <div class="empty-t">오류 수정 대기 중</div>
+          <div class="empty-d">코드 입력 후 🔧 오류 수정을 누르세요</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- OPT MODAL -->
+<div id="opt-overlay" class="overlay">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div style="font-size:13px;font-weight:600">🚀 AI 자동 최적화 결과</div>
+      <button class="modal-x" id="modal-close-btn">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="opt-loading" style="padding:40px 16px;text-align:center;color:var(--tx2)">
+        <div style="width:32px;height:32px;border:2.5px solid var(--bd);border-top-color:var(--ac);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px"></div>
+        <div style="font-size:12px">코드 최적화 중...</div>
+      </div>
+      <div id="opt-result" style="display:none">
+        <div id="opt-summary" style="padding:12px 16px;border-bottom:1px solid var(--bd);font-size:11px;color:var(--tx2);line-height:1.65"></div>
+        <div style="padding:10px 16px;border-bottom:1px solid var(--bd)">
+          <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--tx2);margin-bottom:8px">변경 사항</div>
+          <div id="opt-changes"></div>
+        </div>
+        <div style="padding:12px 16px">
+          <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--tx2);margin-bottom:6px;display:flex;align-items:center;justify-content:space-between">
+            <span>✅ 최적화된 코드</span>
+            <button class="copybtn" id="opt-copy-btn">📋 복사</button>
+          </div>
+          <div id="opt-code" style="background:#010409;border:1px solid var(--bd);border-radius:6px;padding:10px 12px;font-family:var(--mono);font-size:11px;color:#e6edf3;overflow:auto;white-space:pre;line-height:1.65;max-height:320px"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="opt-cancel" id="modal-cancel-btn">닫기</button>
+      <button class="opt-apply" id="modal-apply-btn" style="display:none">↩ 에디터에 적용</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROJECT NAME MODAL -->
+<div id="pm-overlay" class="pm-overlay">
+  <div class="pm-box">
+    <h3 id="pm-title">📁 새 프로젝트</h3>
+    <input class="pm-input" id="pm-input" placeholder="프로젝트 이름..." maxlength="30">
+    <div class="pm-btns">
+      <button class="pm-cancel" id="pm-cancel">취소</button>
+      <button class="pm-ok" id="pm-ok">확인</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+/* ═══════════════════════════════════════
+   메인 스크립트 — CodeReview AI
+   모든 이벤트: window.load 안에서 등록
+   API 키: sessionStorage 단일 소스
+   ═══════════════════════════════════════ */
+window.addEventListener('load', function () {
+
+  /* ── 모델 ── */
+  var MODELS = [
+    {id:'llama-3.3-70b-versatile', label:'Llama 3.3 70B'},
+    {id:'llama-3.1-8b-instant',    label:'Llama 3.1 8B'},
+    {id:'gemma2-9b-it',            label:'Gemma 2 9B'},
+    {id:'mixtral-8x7b-32768',      label:'Mixtral 8x7B'}
+  ];
+  var modelIdx = 0;
+
+  /* ── API 키 (sessionStorage 단일 소스) ── */
+  var GROQ_KEY = '';
+  function getKey()  { return sessionStorage.getItem('groq_key') || ''; }
+  function setKey(k) { GROQ_KEY = k; sessionStorage.setItem('groq_key', k); }
+  GROQ_KEY = getKey();
+
+  /* ── 기타 상태 ── */
+  var lastFixedCode = '';
+  var lastOptCode   = '';
+  var chatHistory   = [];
+
+  /* ── 채팅 스토어 ── */
+  var SKEY = 'cr_chats_v3';
+  var PCOLS = ['#58a6ff','#3fb950','#d29922','#f85149','#bc8cff','#39d2c0'];
+  function ls(k)    { try{ return JSON.parse(localStorage.getItem(k)); }catch(e){ return null; } }
+  function ss(k,v)  { try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+  var store = ls(SKEY) || {projects:[], chats:[], activeChatId:null};
+  function saveStore() { ss(SKEY, store); }
+  function gid() { return Date.now().toString(36)+Math.random().toString(36).slice(2,5); }
+  function nowT() { return new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}); }
+  function getChat() { return store.chats.find(function(c){return c.id===store.activeChatId;})||null; }
+
+  function createChat(projId, title) {
+    var c = {id:gid(), title:title||'새 채팅', projectId:projId||null,
+              history:[], messages:[], createdAt:Date.now(), updatedAt:Date.now()};
+    store.chats.unshift(c);
+    if(projId){ var p=store.projects.find(function(x){return x.id===projId;}); if(p)p.chatIds.unshift(c.id); }
+    store.activeChatId = c.id; saveStore(); return c;
+  }
+  function deleteChat(id) {
+    store.chats = store.chats.filter(function(c){return c.id!==id;});
+    store.projects.forEach(function(p){p.chatIds=p.chatIds.filter(function(x){return x!==id;});});
+    if(store.activeChatId===id) store.activeChatId = store.chats[0]&&store.chats[0].id||null;
+    saveStore();
+  }
+  function createProj(name) {
+    var p={id:gid(),name:name,color:PCOLS[store.projects.length%PCOLS.length],chatIds:[],collapsed:false};
+    store.projects.push(p); saveStore(); return p;
+  }
+  function deleteProj(id) {
+    var p=store.projects.find(function(x){return x.id===id;}); if(!p) return;
+    p.chatIds.forEach(function(cid){store.chats=store.chats.filter(function(c){return c.id!==cid;});});
+    store.projects=store.projects.filter(function(x){return x.id!==id;});
+    if(!store.chats.find(function(c){return c.id===store.activeChatId;}))
+      store.activeChatId=store.chats[0]&&store.chats[0].id||null;
+    saveStore();
+  }
+
+  /* ── 샘플 ── */
+  var S = {
+    split:"s = 'd at a'\nl = s.split()\nprint(l)\n\ns2 = 'a,b,c,d'\nl2 = s2.split(',')\nprint(l2)\n\nl3 = s2.split(',', 2)\nprint(l3)",
+    bubble:"def bubble_sort(arr):\n    n = len(arr)\n    for i in range(n):\n        for j in range(0, n-i-1):\n            if arr[j] > arr[j+1]:\n                arr[j], arr[j+1] = arr[j+1], arr[j]\n    return arr\n\nprint(bubble_sort([64,34,25,12,22,11,90]))",
+    fib:"def fibonacci(n):\n    if n <= 1:\n        return n\n    return fibonacci(n-1) + fibonacci(n-2)\n\nfor i in range(10):\n    print(f'fib({i}) = {fibonacci(i)}')",
+    bsearch:"def binary_search(arr, target):\n    left, right = 0, len(arr)-1\n    while left <= right:\n        mid = (left+right)//2\n        if arr[mid]==target: return mid\n        elif arr[mid]<target: left=mid+1\n        else: right=mid-1\n    return -1\n\nprint(binary_search([1,3,5,7,9,11], 7))",
+    linked:"class Node:\n    def __init__(self, data):\n        self.data = data\n        self.next = None\n\nclass LinkedList:\n    def __init__(self):\n        self.head = None\n    def append(self, data):\n        node = Node(data)\n        if not self.head:\n            self.head = node; return\n        cur = self.head\n        while cur.next: cur = cur.next\n        cur.next = node",
+    buggy:"import pickle, os\n\ndef process_user_data(user_input):\n    query = \"SELECT * FROM users WHERE id = \" + user_input\n    data = pickle.loads(user_input)\n    password = \"admin123\"\n    big_list = [i for i in range(10000000)]\n    return data",
+    syntax:"def calculate_average(numbers)\n    if len(numbers) = 0:\n        print(\"빈 리스트\"\n        return None\n    total = 0\n    for num in numbers\n        total += num\n    return total / len(numbers\n\nresult = calculate_average(\"hello\")\nprint(\"평균:\" + result)"
+  };
+
+  /* ── DOM ── */
+  var cta   = document.getElementById('cta');
+  var lnums = document.getElementById('lnums');
+  var lsel  = document.getElementById('lsel');
+  var rc    = document.getElementById('rc');
+  if (!cta||!lnums||!lsel||!rc) { console.error('필수 DOM 없음'); return; }
+
+  /* ════════════════════════════════════
+     API 키 관리
+  ════════════════════════════════════ */
+  // 초기 복원
+  if (GROQ_KEY) {
+    var kb=document.getElementById('key-banner'), ki=document.getElementById('groq-key');
+    if(kb) kb.classList.add('hidden');
+    if(ki) ki.value = GROQ_KEY;
+  }
+
+  // 저장 버튼 — addEventListener 하나만
+  on('save-key-btn', 'click', doSaveKey);
+  var keyIn = document.getElementById('groq-key');
+  if(keyIn) keyIn.addEventListener('keydown', function(e){ if(e.key==='Enter') doSaveKey(); });
+
+  function doSaveKey() {
+    var ki = document.getElementById('groq-key');
+    var k  = ki ? ki.value.trim() : '';
+    if (!k.startsWith('gsk_')) {
+      alert('올바른 Groq API 키가 아닙니다.\ngsk_ 로 시작하는 키를 입력해주세요.\n발급: https://console.groq.com/keys');
+      return;
+    }
+    setKey(k);
+    var kb = document.getElementById('key-banner');
+    if(kb) kb.classList.add('hidden');
+    showOK('✅ API 키 저장 완료! 코드를 입력하고 분석하세요.');
+  }
+
+  // 주기적으로 sessionStorage 키 동기화 (다른 탭 등 대비)
+  setInterval(function() {
+    var k = getKey();
+    if (k && k !== GROQ_KEY) {
+      GROQ_KEY = k;
+      var kb=document.getElementById('key-banner');
+      if(kb) kb.classList.add('hidden');
+    }
+  }, 500);
+
+  function needKey() {
+    GROQ_KEY = getKey();
+    if (!GROQ_KEY) {
+      var kb=document.getElementById('key-banner'), ki=document.getElementById('groq-key');
+      if(kb) kb.classList.remove('hidden');
+      if(ki) ki.focus();
+      return true;
+    }
+    return false;
+  }
+
+  function showOK(msg) {
+    if(rc) rc.innerHTML='<div class="ok-box">'+msg+'</div>';
+  }
+
+  /* ════════════════════════════════════
+     에디터
+  ════════════════════════════════════ */
+  function updLN() {
+    var n = cta.value.split('\n').length;
+    lnums.innerHTML = Array.from({length:n},function(_,i){return '<span>'+(i+1)+'</span>';}).join('');
+  }
+  cta.addEventListener('input', function() {
+    updLN();
+    // 언어 자동 감지 (디바운스)
+    clearTimeout(cta._langTimer);
+    cta._langTimer = setTimeout(function() {
+      var detected = detectLang(cta.value);
+      if (detected && lsel && lsel.value !== detected) {
+        lsel.value = detected;
+        // 살짝 하이라이트
+        lsel.style.color = 'var(--gn)';
+        setTimeout(function(){ lsel.style.color = ''; }, 1200);
+      }
+    }, 800);
+  });
+  cta.addEventListener('scroll', function(){ lnums.scrollTop = cta.scrollTop; });
+  cta.addEventListener('keydown', function(e){
+    if(e.key==='Tab'){
+      e.preventDefault();
+      var s=cta.selectionStart;
+      cta.value=cta.value.slice(0,s)+'  '+cta.value.slice(cta.selectionEnd);
+      cta.selectionStart=cta.selectionEnd=s+2; updLN();
+    }
+  });
+
+  /* ── 탭 ── */
+  function switchLeft(t) {
+    ['editor','github','chat'].forEach(function(x){
+      var tab=document.getElementById('lt-'+x); if(tab) tab.classList.toggle('active',x===t);
+      var pane=document.getElementById('lp-'+x); if(pane) pane.style.display=x===t?'flex':'none';
+    });
+    if(t==='chat') scrollChatBot();
+  }
+  function switchRight(t) {
+    ['review','fix'].forEach(function(x){
+      var tab=document.getElementById('rt-'+x); if(tab) tab.classList.toggle('active',x===t);
+      var pane=document.getElementById('rp-'+x); if(pane) pane.style.display=x===t?'flex':'none';
+    });
+  }
+  on('lt-editor','click',function(){switchLeft('editor');});
+  on('lt-github','click', function(){switchLeft('github');});
+  on('lt-chat',  'click', function(){switchLeft('chat');});
+  on('rt-review','click', function(){switchRight('review');});
+  on('rt-fix',   'click', function(){switchRight('fix');});
+
+  /* ── 칩 ── */
+  var cw = document.getElementById('chips-wrap');
+  if(cw) cw.addEventListener('click', function(e){
+    var ch=e.target.closest('.chip'); if(!ch) return;
+    document.querySelectorAll('.chip').forEach(function(c){c.classList.remove('on');});
+    ch.classList.add('on');
+    cta.value=S[ch.dataset.s]||''; lsel.value='python'; updLN(); switchLeft('editor');
+  });
+
+  /* ── GitHub ── */
+  function loadGH() {
+    var url=(document.getElementById('ghurl')||{}).value||''; url=url.trim();
+    if(!url){alert('URL 입력');return;}
+    if(url.includes('github.com')&&!url.includes('raw.'))
+      url=url.replace('github.com','raw.githubusercontent.com').replace('/blob/','/ ').trim();
+    var tok=(document.getElementById('ghtok')||{}).value||'';
+    fetch(url, tok?{headers:{Authorization:'token '+tok}}:{})
+      .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text();})
+      .then(function(t){cta.value=t;updLN();switchLeft('editor');})
+      .catch(function(e){alert('실패: '+e.message);});
+  }
+  on('gh-load-btn', 'click', loadGH);
+  on('gh-load-btn2','click', loadGH);
+
+  /* ── 접기 ── */
+  function tog(id) {
+    var b=document.getElementById('b-'+id), ch=document.getElementById('c-'+id); if(!b) return;
+    var open=b.style.maxHeight&&b.style.maxHeight!=='0px';
+    b.style.maxHeight=open?'0px':'5000px'; if(ch) ch.classList.toggle('op',!open);
+  }
+
+  /* ════════════════════════════════════
+     유틸
+  ════════════════════════════════════ */
+  function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function on(id,ev,fn){ var el=document.getElementById(id); if(el) el.addEventListener(ev,fn); }
+  function setSt(txt,cls){ var sb=document.getElementById('sbadge'); if(sb){sb.textContent=txt;sb.className='bx '+cls;} }
+  function setModel(lbl){ var mb=document.getElementById('model-badge'); if(mb) mb.textContent=lbl; }
+  function showLoad(cid, steps, cc) {
+    var el=document.getElementById(cid); if(!el) return;
+    el.innerHTML='<div class="loading"><div class="big-sp '+(cc||'')+'"></div>'
+      +'<div style="font-size:11px;color:var(--tx2)">분석 중...</div>'
+      +'<div class="lsteps">'+steps.map(function(s,i){
+        return '<div class="lstep"><div class="sd '+(i===0?'active':'')+'"></div><span>'+s+'</span></div>';
+      }).join('')+'</div></div>';
+  }
+
+  /* ════════════════════════════════════
+     Groq API
+  ════════════════════════════════════ */
+  function callGroq(messages, attempt, jsonMode) {
+    attempt = attempt || 0; if(jsonMode===undefined) jsonMode=false;
+    if(attempt >= MODELS.length) return Promise.reject(new Error('모든 모델 한도 초과. 잠시 후 다시 시도해주세요.'));
+    var model = MODELS[modelIdx % MODELS.length];
+    setModel(model.label);
+    var body = {model:model.id, messages:messages, temperature:0.1, max_tokens:8192};
+    if(jsonMode) body.response_format = {type:'json_object'};
+    return fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method:'POST',
+      headers:{'Authorization':'Bearer '+GROQ_KEY, 'Content-Type':'application/json'},
+      body:JSON.stringify(body)
+    }).then(function(r){
+      if(r.status===429){
+        modelIdx=(modelIdx+1)%MODELS.length;
+        return new Promise(function(res){setTimeout(res,1000);}).then(function(){return callGroq(messages,attempt+1,jsonMode);});
+      }
+      if(r.status===401) throw new Error('API 키 인증 실패 — 키를 다시 확인해주세요');
+      if(!r.ok) return r.json().catch(function(){return{};}).then(function(b){throw new Error(b.error&&b.error.message||'HTTP '+r.status);});
+      return r.json();
+    }).then(function(d){
+      return ((d.choices&&d.choices[0]&&d.choices[0].message&&d.choices[0].message.content)||'').trim();
+    });
+  }
+
+  function parseJSON(raw) {
+    var s=raw.trim();
+    var fns=[
+      function(r){return JSON.parse(r);},
+      function(r){return JSON.parse(r.replace(/^```json\s*/i,'').replace(/\s*```$/,''));},
+      function(r){return JSON.parse(r.replace(/^```\s*/,'').replace(/\s*```$/,''));},
+      function(r){var i=r.indexOf('{'),j=r.lastIndexOf('}');if(i>=0&&j>i)return JSON.parse(r.slice(i,j+1));throw 0;}
+    ];
+    for(var i=0;i<fns.length;i++){try{return fns[i](s);}catch(e){}}
+    throw new Error('JSON 파싱 실패');
+  }
+
+  function copyText(text, btn) {
+    if(!text){alert('복사할 코드가 없습니다.');return;}
+    navigator.clipboard.writeText(text).then(function(){
+      var o=btn.textContent; btn.textContent='✅ 복사됨';
+      setTimeout(function(){btn.textContent=o;},2000);
+    }).catch(function(){
+      var ta=document.createElement('textarea'); ta.value=text;
+      document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+      document.body.removeChild(ta); alert('복사되었습니다!');
+    });
+  }
+
+  function applyToEditor(code) {
+    if(!code){alert('적용할 코드가 없습니다.');return;}
+    if(!confirm('에디터의 코드를 교체하시겠습니까?')) return;
+    cta.value=code; updLN(); switchLeft('editor');
+    var dot=document.getElementById('fix-dot'); if(dot) dot.classList.remove('show');
+    cta.style.outline='2px solid #3fb950';
+    setTimeout(function(){cta.style.outline='';},1500);
+  }
+
+  /* ════════════════════════════════════
+     1. 코드 리뷰
+  ════════════════════════════════════ */
+  on('runbtn','click',doAnalyze);
+  function doAnalyze() {
+    if(needKey()) return;
+    var code=cta.value.trim(); if(!code){alert('코드를 입력해주세요.');return;}
+    var lang=lsel.value;
+    var btn=document.getElementById('runbtn');
+    if(btn){btn.disabled=true;btn.innerHTML='<div class="spin"></div> 분석 중...';}
+    setSt('● Analyzing','bx-a'); switchRight('review');
+    var eb=document.getElementById('eval-banner'), ow=document.getElementById('opt-wrap'), sc=document.getElementById('score-cards');
+    if(eb) eb.style.display='none'; if(ow) ow.style.display='none'; if(sc) sc.style.display='none';
+    showLoad('rc',['코드 파싱','스타일 검사','버그 탐지','복잡도 분석','개선 제안']);
+
+    var prompt='아래 '+lang+' 코드를 분석하고 JSON만 반환하세요.\n코드:```'+lang+'\n'+code+'\n```\n'
+      +'{"scores":{"total":0-100,"style":0-100,"performance":0-100,"safety":0-100,"readability":0-100,"grade":"A/B/C/D/F","summary":"한줄평가"},'
+      +'"score_details":{"style":{"reason":"이유","problems":["문제"],"tips":[{"title":"팁","desc":"설명","code":""}]},'
+      +'"performance":{"reason":"이유","problems":["문제"],"tips":[{"title":"팁","desc":"설명","code":""}]},'
+      +'"safety":{"reason":"이유","problems":["문제"],"tips":[{"title":"팁","desc":"설명","code":""}]},'
+      +'"readability":{"reason":"이유","problems":["문제"],"tips":[{"title":"팁","desc":"설명","code":""}]}},'
+      +'"style":[{"severity":"info|warning|error","title":"제목","description":"설명","suggestion":"예시"}],'
+      +'"complexity":{"time":"O(?)","space":"O(?)","rating":"good|ok|bad","explanation":"설명","items":[{"severity":"info","title":"제목","description":"설명"}]},'
+      +'"bugs":[{"severity":"error","title":"제목","description":"설명","suggestion":"예시"}],'
+      +'"refactoring":[{"severity":"warning","title":"제목","description":"설명","suggestion":"예시"}],'
+      +'"algorithms":[{"severity":"info","title":"제목","description":"설명","suggestion":"예시"}],'
+      +'"datastructures":[{"severity":"info","title":"제목","description":"설명","suggestion":"예시"}]}\n한국어,JSON만';
+
+    callGroq([{role:'system',content:'수석 소프트웨어 엔지니어. 순수 JSON만 반환.'},{role:'user',content:prompt}],0,true)
+    .then(function(raw){renderReview(parseJSON(raw));})
+    .catch(function(err){
+      if(eb) eb.style.display='none';
+      if(rc) rc.innerHTML='<div class="err-box"><strong>❌ '+esc(err.message)+'</strong><br>• API 키 확인<br>• 잠시 후 재시도</div>';
+    })
+    .finally(function(){if(btn){btn.disabled=false;btn.innerHTML='⚡ 코드 리뷰';}setSt('● Ready','bx-g');});
+  }
+
+  function renderReview(r) {
+    var sc=r.scores||{}, sd=r.score_details||{};
+    var tot=Math.min(100,Math.max(0,Math.round(+sc.total||0)));
+    var gmap={
+      A:{label:'훌륭한 코드',color:'#3fb950',cls:'eg-A',desc:'전반적으로 매우 우수합니다.'},
+      B:{label:'양호한 코드',color:'#58a6ff',cls:'eg-B',desc:'잘 작성된 코드입니다.'},
+      C:{label:'보통 수준',  color:'#d29922',cls:'eg-C',desc:'여러 항목에서 개선이 필요합니다.'},
+      D:{label:'개선 필요',  color:'#f85149',cls:'eg-D',desc:'다수의 문제가 발견됐습니다.'},
+      F:{label:'심각한 문제',color:'#f85149',cls:'eg-F',desc:'즉각적인 수정이 필요합니다.'}
+    };
+    var grade=sc.grade||(tot>=80?'A':tot>=70?'B':tot>=60?'C':tot>=50?'D':'F');
+    var gi=gmap[grade]||gmap['C'];
+    var el=function(id){return document.getElementById(id);};
+    var badge=el('eval-badge'),etitle=el('eval-title'),tsc=el('tsc'),sgrd=el('sgrade'),edesc=el('eval-desc'),eb=el('eval-banner'),ow=el('opt-wrap');
+    if(badge){badge.textContent=grade;badge.className='eval-badge '+gi.cls;}
+    if(etitle){etitle.textContent=gi.label;etitle.style.color=gi.color;}
+    if(tsc){tsc.textContent=tot;tsc.style.color=tot>=80?'#3fb950':tot>=60?'#d29922':'#f85149';}
+    if(sgrd) sgrd.textContent={A:'🏆',B:'✅',C:'⚠️',D:'❗',F:'❌'}[grade]||'📋';
+    if(edesc){edesc.textContent=(sc.summary?sc.summary+' — ':'')+gi.desc;edesc.style.setProperty('--eac',gi.color);}
+    if(eb) eb.style.display='block';
+    if(ow) ow.style.display=tot<60?'block':'none';
+    var cardDefs=[
+      {key:'style',      lbl:'코드 스타일',ico:'🎨',color:'#58a6ff',bg:'rgba(88,166,255,.15)'},
+      {key:'performance',lbl:'성능',       ico:'⚡',color:'#bc8cff',bg:'rgba(188,140,255,.15)'},
+      {key:'safety',     lbl:'안전성',     ico:'🛡️',color:'#3fb950',bg:'rgba(63,185,80,.15)'},
+      {key:'readability',lbl:'가독성',     ico:'📖',color:'#d29922',bg:'rgba(210,153,34,.15)'}
+    ];
+    var cardsEl=document.getElementById('score-cards');
+    if(cardsEl){
+      cardsEl.innerHTML='<div class="sc-grid">'+cardDefs.map(function(def){
+        var val=Math.min(100,Math.max(0,Math.round(+(sc[def.key]||0))));
+        var det=sd[def.key]||{}, sc2=val>=80?'#3fb950':val>=60?'#d29922':'#f85149';
+        var tips=(det.tips||[]).map(function(t){return '<div class="sc-tip" style="--cc:'+def.color+'"><span style="font-size:11px;flex-shrink:0">💡</span><div class="sc-tip-body"><strong style="color:var(--tx);font-size:10.5px">'+esc(t.title||'')+'</strong><br>'+esc(t.desc||'')+(t.code?'<div class="sc-tip-code">'+esc(t.code)+'</div>':'')+'</div></div>';}).join('');
+        var probs=(det.problems||[]).map(function(p){return '<div style="display:flex;gap:5px;margin-bottom:3px"><span style="color:'+def.color+';flex-shrink:0">•</span><span style="font-size:10px;color:var(--tx2)">'+esc(p)+'</span></div>';}).join('');
+        return '<div class="sc-card" style="--cc:'+def.color+'" data-scid="sc-'+def.key+'"><div class="sc-top"><div style="display:flex;align-items:center;gap:7px"><div class="sc-ico" style="background:'+def.bg+'">'+def.ico+'</div><div class="sc-lbl">'+def.lbl+'</div></div><div style="text-align:right"><div class="sc-val" style="color:'+sc2+'">'+val+'</div><div style="font-size:9px;color:var(--tx2)">/100</div></div></div><div class="sc-bar"><div class="sc-fill" style="width:'+val+'%;background:'+def.color+'"></div></div><div class="sc-body" id="sc-'+def.key+'"><div class="sc-inner">'+(det.reason?'<div class="sc-reason">'+esc(det.reason)+'</div>':'')+(probs?'<div style="margin-bottom:8px">'+probs+'</div>':'')+(tips?'<div style="font-size:9px;color:var(--tx2);text-transform:uppercase;letter-spacing:.06em;font-weight:600;margin-bottom:5px">최적화 방법</div>'+tips:'')+'</div></div></div>';
+      }).join('')+'</div>';
+      cardsEl.style.display='block';
+      cardsEl.querySelectorAll('.sc-card').forEach(function(card){
+        card.addEventListener('click',function(){
+          var id=this.dataset.scid, body=document.getElementById(id); if(!body) return;
+          var isOpen=body.classList.contains('open');
+          document.querySelectorAll('.sc-body').forEach(function(b){b.classList.remove('open');});
+          document.querySelectorAll('.sc-card').forEach(function(c){c.classList.remove('active');});
+          if(!isOpen){body.classList.add('open');this.classList.add('active');}
+        });
+      });
+    }
+    var cx=r.complexity||{}, bgc=cx.rating==='good'?'bg-good':cx.rating==='bad'?'bg-bad':'bg-ok';
+    var secs=[
+      {id:'sty',title:'코드 스타일',  ico:'🎨',ic:'ri-s',cc:'c-b',items:r.style||[]},
+      {id:'bug',title:'버그 가능성',  ico:'🐛',ic:'ri-b',cc:'c-r',items:r.bugs||[]},
+      {id:'ref',title:'리팩토링 제안',ico:'♻️',ic:'ri-r',cc:'c-g',items:r.refactoring||[]},
+      {id:'alg',title:'알고리즘 개선',ico:'⚡',ic:'ri-a',cc:'c-b',items:r.algorithms||[]},
+      {id:'dts',title:'자료구조 분석',ico:'🗂️',ic:'ri-d',cc:'c-a',items:r.datastructures||[]}
+    ];
+    var html='<div class="rsec"><div class="rsh" data-tog="cx"><div class="rst"><div class="ri ri-c">📊</div><span class="rtt">시간/공간 복잡도</span><span class="bx bx-b" style="font-size:9px;padding:1px 5px">'+esc(cx.time||'-')+'</span></div><span class="chv op" id="c-cx">›</span></div><div class="sbd" id="b-cx" style="max-height:5000px"><div class="cxv"><div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:7px"><span class="bigo '+bgc+'">⏱ '+esc(cx.time||'-')+'</span><span class="bigo bg-ok">💾 '+esc(cx.space||'-')+'</span></div><div style="font-size:10.5px;color:var(--tx2);line-height:1.6">'+esc(cx.explanation||'')+'</div></div>'+mkItems(cx.items||[])+'</div></div>';
+    secs.forEach(function(s,i){
+      var open=i<2;
+      html+='<div class="rsec"><div class="rsh" data-tog="'+s.id+'"><div class="rst"><div class="ri '+s.ic+'">'+s.ico+'</div><span class="rtt">'+s.title+'</span><span class="cnt '+s.cc+'">'+s.items.length+'</span></div><span class="chv '+(open?'op':'')+'" id="c-'+s.id+'">›</span></div><div class="sbd" id="b-'+s.id+'" style="max-height:'+(open?'5000px':'0px')+'">'+(s.items.length?mkItems(s.items):'<div style="padding:10px 13px;font-size:10.5px;color:var(--tx2)">✓ 발견된 항목 없음</div>')+'</div></div>';
+    });
+    if(rc){rc.innerHTML=html;rc.addEventListener('click',function(e){var rsh=e.target.closest('[data-tog]');if(rsh)tog(rsh.dataset.tog);});}
+  }
+
+  function mkItems(arr) {
+    if(!arr||!arr.length) return '';
+    return arr.map(function(it){
+      var sv={error:'fv-e',warning:'fv-w',info:'fv-i',success:'fv-s'}[it.severity]||'fv-i';
+      return '<div class="fi"><div class="fv '+sv+'"></div><div class="fb"><div class="ft">'+esc(it.title||'')+'</div><div class="fd">'+esc(it.description||'')+'</div>'+(it.suggestion?'<div class="fc">'+esc(it.suggestion)+'</div>':'')+'</div></div>';
+    }).join('');
+  }
+
+  /* ════════════════════════════════════
+     2. 오류 수정
+  ════════════════════════════════════ */
+  on('fixbtn','click',doFix);
+  function doFix() {
+    if(needKey()) return;
+    var code=cta.value.trim(); if(!code){alert('코드를 입력해주세요.');return;}
+    var lang=lsel.value;
+    var btn=document.getElementById('fixbtn');
+    if(btn){btn.disabled=true;btn.innerHTML='<div class="spin"></div> 수정 중...';}
+    setSt('● Fixing','bx-a'); switchRight('fix');
+    showLoad('fix-content',['코드 스캔','오류 분류','수정 코드 생성','주석 추가','검증'],'blue');
+
+    var sysMsg='코드 오류 수정 전문가. 순수 JSON만 반환. 마크다운 절대 금지.';
+    var userMsg='아래 '+lang+' 코드의 오류를 찾아 수정하세요. JSON만 반환.\n\n코드:\n'+code
+      +'\n\n형식: {"has_errors":true,"error_count":2,"summary":"요약","errors":[{"type":"SyntaxError","line":3,"original":"오류줄","problem":"문제설명","fix":"수정방법","fixed_code":"수정줄"}],"fixed_full_code":"수정된 전체 코드"}\n'
+      +'오류없으면: {"has_errors":false,"error_count":0,"summary":"정상","errors":[],"fixed_full_code":"원본코드"}';
+
+    callGroq([{role:'system',content:sysMsg},{role:'user',content:userMsg}],0,false)
+    .then(function(raw){
+      var result=null;
+      try{result=parseJSON(raw);}catch(e1){
+        var fi=raw.indexOf('"fixed_full_code"');
+        if(fi!==-1){
+          var ac=raw.indexOf('"',fi+18);
+          if(ac!==-1){
+            var ex=raw.slice(ac+1,raw.lastIndexOf('"')).replace(/\\n/g,'\n').replace(/\\t/g,'    ').replace(/\\"/g,'"');
+            result={has_errors:true,error_count:1,summary:'오류가 수정되었습니다.',errors:[],fixed_full_code:ex};
+          }
+        }
+      }
+      if(!result||!result.fixed_full_code) throw new Error('응답 파싱 실패. 다시 시도해주세요.');
+      var fc=result.fixed_full_code.replace(/\\n/g,'\n').replace(/\\t/g,'    ').replace(/\\"/g,'"');
+      result.fixed_full_code=fc; lastFixedCode=fc.trim();
+      renderFix(result);
+      var dot=document.getElementById('fix-dot'); if(dot) dot.classList.toggle('show',!!(result.has_errors&&result.error_count>0));
+    })
+    .catch(function(err){
+      var fc=document.getElementById('fix-content');
+      if(fc) fc.innerHTML='<div class="err-box"><strong>❌ 오류 수정 실패</strong><br>'+esc(err.message)+'</div>';
+    })
+    .finally(function(){if(btn){btn.disabled=false;btn.innerHTML='🔧 오류 수정';}setSt('● Ready','bx-g');});
+  }
+
+  function renderFix(r) {
+    var fc=document.getElementById('fix-content'); if(!fc) return;
+    if(!r.has_errors||r.error_count===0){
+      fc.innerHTML='<div style="padding:32px 20px;text-align:center"><div style="font-size:48px;margin-bottom:12px">✅</div><div style="font-size:14px;font-weight:700;color:var(--gn);margin-bottom:6px">오류가 없습니다!</div><div style="font-size:11px;color:var(--tx2);line-height:1.7">'+esc(r.summary||'코드가 정상입니다.')+'</div></div>';
+      return;
+    }
+    var errors=r.errors||[];
+    var svm={SyntaxError:{label:'문법 오류',color:'#f85149',bg:'rgba(248,81,73,.12)',border:'rgba(248,81,73,.35)'},LogicError:{label:'로직 오류',color:'#d29922',bg:'rgba(210,153,34,.12)',border:'rgba(210,153,34,.35)'},RuntimeError:{label:'런타임 오류',color:'#f85149',bg:'rgba(248,81,73,.1)',border:'rgba(248,81,73,.3)'},SecurityError:{label:'보안 오류',color:'#bc8cff',bg:'rgba(188,140,255,.12)',border:'rgba(188,140,255,.35)'},TypeError:{label:'타입 오류',color:'#d29922',bg:'rgba(210,153,34,.1)',border:'rgba(210,153,34,.3)'}};
+    function sv(t){return svm[t]||{label:t||'오류',color:'#f85149',bg:'rgba(248,81,73,.1)',border:'rgba(248,81,73,.3)'};}
+    var header='<div style="background:var(--bg2);border-bottom:2px solid var(--bd);padding:14px 16px;flex-shrink:0"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><div style="display:flex;align-items:center;gap:10px"><div style="width:36px;height:36px;background:var(--rdb);border:1px solid rgba(248,81,73,.4);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px">🔧</div><div><div style="font-size:13px;font-weight:700;color:var(--tx)">'+errors.length+'개 오류 발견 · 수정 완료</div><div style="font-size:10.5px;color:var(--tx2);margin-top:2px">'+esc(r.summary||'')+'</div></div></div><div style="display:flex;gap:7px"><button id="fix-copy-btn" style="padding:6px 13px;background:var(--bg3);color:var(--tx2);border:1px solid var(--bd);border-radius:6px;font-size:11px;cursor:pointer">📋 복사</button><button id="fix-apply-btn" style="padding:6px 13px;background:var(--gnb);color:var(--gn);border:1px solid rgba(63,185,80,.4);border-radius:6px;font-size:11px;cursor:pointer;font-weight:700">↩ 적용</button></div></div><div style="display:flex;gap:6px;flex-wrap:wrap">'+errors.map(function(e){var s=sv(e.type);return '<span style="font-size:10px;padding:2px 9px;border-radius:10px;background:'+s.bg+';color:'+s.color+';border:1px solid '+s.border+';font-weight:600">'+s.label+(e.line?' · L'+e.line:'')+'</span>';}).join('')+'</div></div>';
+    var cards=errors.map(function(e,idx){
+      var s=sv(e.type);
+      return '<div style="margin:10px 12px;background:var(--bg2);border:1px solid var(--bd);border-radius:10px;overflow:hidden"><div style="background:'+s.bg+';border-bottom:1px solid '+s.border+';padding:10px 14px;display:flex;align-items:center;gap:10px"><div style="width:26px;height:26px;border-radius:50%;background:'+s.color+'22;border:1.5px solid '+s.color+';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:'+s.color+';flex-shrink:0">'+(idx+1)+'</div><div style="flex:1"><div style="display:flex;align-items:center;gap:8px;margin-bottom:2px"><span style="font-size:11px;font-weight:700;color:'+s.color+'">'+s.label+'</span>'+(e.line?'<span style="font-size:10px;background:var(--bg3);color:var(--tx2);padding:1px 7px;border-radius:4px;font-family:var(--mono)">Line '+e.line+'</span>':'')+'</div><div style="font-size:12px;font-weight:600;color:var(--tx)">'+esc(e.problem||'')+'</div></div></div><div style="padding:12px 14px;display:flex;flex-direction:column;gap:10px"><div style="font-size:11px;color:var(--tx2);line-height:1.65">'+esc(e.fix||'')+'</div>'+(e.original?'<div><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--rd);margin-bottom:5px;display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--rd)"></span>오류 코드</div><div style="background:#1a0808;border:1.5px solid rgba(248,81,73,.45);border-radius:7px;padding:10px 12px;font-family:var(--mono);font-size:12px;font-weight:700;color:#ff6b6b;white-space:pre;overflow-x:auto;line-height:1.6;position:relative"><div style="position:absolute;top:6px;right:8px;font-size:9px;background:rgba(248,81,73,.2);color:var(--rd);padding:1px 6px;border-radius:4px;font-weight:600;font-family:sans-serif">BEFORE</div>'+esc(e.original)+'</div></div>':'')+(e.fixed_code?'<div><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--gn);margin-bottom:5px;display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--gn)"></span>수정된 코드</div><div style="background:#0a1a0f;border:1.5px solid rgba(63,185,80,.4);border-radius:7px;padding:10px 12px;font-family:var(--mono);font-size:12px;color:#7ee787;white-space:pre;overflow-x:auto;line-height:1.6;position:relative"><div style="position:absolute;top:6px;right:8px;font-size:9px;background:rgba(63,185,80,.2);color:var(--gn);padding:1px 6px;border-radius:4px;font-weight:600;font-family:sans-serif">AFTER</div>'+esc(e.fixed_code)+'</div></div>':'')+'</div></div>';
+    }).join('');
+    var fullCode='<div style="margin:10px 12px 14px"><div style="background:var(--bg2);border:1px solid var(--bd);border-radius:10px;overflow:hidden"><div style="background:var(--bg3);padding:10px 14px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between"><div style="display:flex;align-items:center;gap:8px"><span style="font-size:14px">✅</span><span style="font-size:12px;font-weight:700;color:var(--tx)">수정된 전체 코드</span><span style="font-size:9px;background:var(--gnb);color:var(--gn);border:1px solid rgba(63,185,80,.3);padding:1px 7px;border-radius:8px;font-weight:600">실행 가능</span></div><button id="fix-copy-full-btn" style="font-size:10px;padding:4px 11px;background:var(--bg);color:var(--tx2);border:1px solid var(--bd);border-radius:5px;cursor:pointer">📋 복사</button></div><div style="background:#010409;overflow:auto;max-height:400px"><table style="width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px;line-height:1.7">'+lastFixedCode.split('\n').map(function(line,idx){return '<tr style="'+(idx%2===0?'background:rgba(255,255,255,.015)':'')+'"><td style="padding:0 10px 0 14px;color:#444c56;user-select:none;text-align:right;width:36px;font-size:10px;vertical-align:top;padding-top:2px">'+(idx+1)+'</td><td style="padding:2px 14px 2px 8px;color:#e6edf3;white-space:pre">'+esc(line)+'</td></tr>';}).join('')+'</table></div></div></div>';
+    fc.innerHTML='<div style="display:flex;flex-direction:column;height:100%">'+header+'<div style="flex:1;overflow-y:auto">'+cards+fullCode+'</div></div>';
+    var cb=document.getElementById('fix-copy-btn'), ab=document.getElementById('fix-apply-btn'), cfb=document.getElementById('fix-copy-full-btn');
+    if(cb) cb.addEventListener('click',function(){copyText(lastFixedCode,this);});
+    if(ab) ab.addEventListener('click',function(){applyToEditor(lastFixedCode);});
+    if(cfb) cfb.addEventListener('click',function(){copyText(lastFixedCode,this);});
+    fc.addEventListener('click',function(e){var rsh=e.target.closest('[data-tog]');if(rsh)tog(rsh.dataset.tog);});
+  }
+
+  /* ════════════════════════════════════
+     3. AI 최적화
+  ════════════════════════════════════ */
+  on('opt-btn','click',doOptimize);
+  on('modal-close-btn', 'click', function(){var ov=document.getElementById('opt-overlay');if(ov)ov.classList.remove('show');});
+  on('modal-cancel-btn','click', function(){var ov=document.getElementById('opt-overlay');if(ov)ov.classList.remove('show');});
+  on('opt-copy-btn',    'click', function(){copyText(lastOptCode,this);});
+  on('modal-apply-btn', 'click', function(){applyToEditor(lastOptCode);var ov=document.getElementById('opt-overlay');if(ov)ov.classList.remove('show');});
+  var optOv=document.getElementById('opt-overlay');
+  if(optOv) optOv.addEventListener('click',function(e){if(e.target===this)this.classList.remove('show');});
+
+  function doOptimize() {
+    if(needKey()) return;
+    var code=cta.value.trim(); if(!code){alert('코드를 입력해주세요.');return;}
+    var lang=lsel.value;
+    var ov=document.getElementById('opt-overlay'), ol=document.getElementById('opt-loading'), or_=document.getElementById('opt-result'), mab=document.getElementById('modal-apply-btn');
+    if(ov) ov.classList.add('show'); if(ol) ol.style.display='block'; if(or_) or_.style.display='none'; if(mab) mab.style.display='none'; lastOptCode='';
+    var btn=document.getElementById('opt-btn');
+    if(btn){btn.disabled=true;btn.innerHTML='<div class="spin"></div> 최적화 중...';}
+    var prompt='아래 '+lang+' 코드를 최적화해주세요.\n[원본]\n'+code+'\n[형식] JSON만. 마크다운 없음.\n{"summary":"개선 요약","score_before":점수,"score_after":점수,"changes":[{"type":"fix","title":"제목","detail":"설명"}],"optimized_code":"최적화된 전체 코드"}\n최적화: 보안취약점 제거, 하드코딩 제거, 성능개선, 스타일, 가독성, 한국어주석';
+    callGroq([{role:'system',content:'수석 소프트웨어 엔지니어. 유효한 JSON만 반환. 마크다운 금지.'},{role:'user',content:prompt}],0,false)
+    .then(function(raw){
+      var result; try{result=parseJSON(raw);}catch(pe){var m=raw.match(/"optimized_code"\s*:\s*"([\s\S]*?)"\s*[,}]/),sm=raw.match(/"summary"\s*:\s*"([^"]+)"/);if(m){result={summary:sm?sm[1]:'최적화 완료',score_before:50,score_after:80,changes:[{type:'improve',title:'코드 최적화',detail:'AI가 최적화했습니다.'}],optimized_code:m[1].replace(/\\n/g,'\n').replace(/\\"/g,'"')};}else throw new Error('파싱 실패');}
+      lastOptCode=(result.optimized_code||'').replace(/\\n/g,'\n').replace(/\\t/g,'    ').replace(/\\"/g,'"');
+      if(!lastOptCode) throw new Error('최적화된 코드가 없습니다.');
+      if(ol) ol.style.display='none'; if(or_) or_.style.display='block'; if(mab) mab.style.display='block';
+      var os=document.getElementById('opt-summary'),oc=document.getElementById('opt-changes'),ocode=document.getElementById('opt-code');
+      if(os) os.innerHTML='<div style="display:flex;align-items:center;gap:12px;margin-bottom:8px"><div style="text-align:center"><div style="font-size:9px;color:var(--tx2);margin-bottom:2px">최적화 전</div><div style="font-size:22px;font-weight:700;color:var(--rd)">'+(result.score_before||'?')+'</div></div><div style="font-size:18px;color:var(--tx2)">→</div><div style="text-align:center"><div style="font-size:9px;color:var(--tx2);margin-bottom:2px">최적화 후</div><div style="font-size:22px;font-weight:700;color:var(--gn)">'+(result.score_after||'?')+'</div></div><div style="flex:1;font-size:11px;color:var(--tx2);line-height:1.6">'+esc(result.summary||'')+'</div></div>';
+      var tm={fix:{cls:'oct-fix',lbl:'수정'},improve:{cls:'oct-improve',lbl:'개선'},style:{cls:'oct-style',lbl:'스타일'}};
+      if(oc) oc.innerHTML=(result.changes||[]).map(function(c){var t=tm[c.type]||tm['improve'];return '<div class="ochange"><span class="oct '+t.cls+'">'+t.lbl+'</span><div style="font-size:10.5px;color:var(--tx2)"><strong style="color:var(--tx);font-weight:500">'+esc(c.title||'')+'</strong><br>'+esc(c.detail||'')+'</div></div>';}).join('');
+      if(ocode) ocode.textContent=lastOptCode;
+    })
+    .catch(function(err){
+      if(ol) ol.innerHTML='<div style="color:var(--rd);font-size:12px;padding:20px;text-align:center">❌ '+esc(err.message)+'</div>';
+    })
+    .finally(function(){if(btn){btn.disabled=false;btn.innerHTML='🚀 AI 자동 최적화 실행';}});
+  }
+
+  /* ════════════════════════════════════
+     4. 컴파일러 (Piston API)
+  ════════════════════════════════════ */
+  /* 언어 자동 감지 */
+  function detectLang(code) {
+    var c = code.trim();
+    // Python
+    if (/^(def |class |import |from |print\(|if __name__|async def )/.test(c) ||
+        /:\s*
+/.test(c) || /^\s{4}/.test(c.split('
+')[1]||'')) return 'python';
+    // JavaScript/TypeScript
+    if (/^(const |let |var |function |=>|async |require\(|module\.exports)/.test(c)) {
+      if (/:\s*(string|number|boolean|any|void)/.test(c) || /interface |type /.test(c)) return 'typescript';
+      return 'javascript';
+    }
+    // Java
+    if (/public\s+(class|static|void|int|String)/.test(c) || /import java\./.test(c)) return 'java';
+    // C++
+    if (/#include\s*<(iostream|vector|string|map|algorithm)>/.test(c) || /std::/.test(c) || /cout\s*<</.test(c)) return 'cpp';
+    // C
+    if (/#include\s*<(stdio|stdlib|string)\.h>/.test(c) || /printf\s*\(|scanf\s*\(/.test(c)) return 'c';
+    // Go
+    if (/^package main/.test(c) || /^import\s*"fmt"/.test(c) || /func main\(\)/.test(c)) return 'go';
+    // Rust
+    if (/^fn main\(\)/.test(c) || /let mut /.test(c) || /println!\(/.test(c)) return 'rust';
+    // SQL
+    if (/^(SELECT|INSERT|UPDATE|DELETE|CREATE|DROP|ALTER)\s/i.test(c)) return 'sql';
+    // TypeScript
+    if (/interface |: string|: number|: boolean/.test(c)) return 'typescript';
+    return null; // 감지 불가
+  }
+
+  var PISTON = 'https://emkc.org/api/v2/piston/execute';
+  var LRT = {
+    python:     {language:'python',     version:'3.10.0',  ext:'main.py'},
+    javascript: {language:'javascript', version:'18.15.0', ext:'main.js'},
+    typescript: {language:'typescript', version:'5.0.3',   ext:'main.ts'},
+    java:       {language:'java',       version:'15.0.2',  ext:'Main.java'},
+    c:          {language:'c',          version:'10.2.0',  ext:'main.c'},
+    cpp:        {language:'c++',        version:'10.2.0',  ext:'main.cpp'},
+    go:         {language:'go',         version:'1.16.2',  ext:'main.go'},
+    rust:       {language:'rust',       version:'1.50.0',  ext:'main.rs'},
+    sql:        {language:'sqlite3',    version:'3.36.0',  ext:'main.sql'}
+  };
+
+  function getExecEl(id){ return document.getElementById(id); }
+  function setExecSt(cls, txt) {
+    var el=getExecEl('exec-status'); if(!el) return;
+    el.className='exec-status '+cls; el.textContent=txt;
+  }
+  function openExec() {
+    var p=getExecEl('exec-panel'); if(!p) return;
+    p.classList.remove('closed'); p.classList.add('open');
+  }
+
+  on('execbtn','click',function(){
+    var code=cta.value.trim(); if(!code){alert('실행할 코드를 입력해주세요.');return;}
+    // 언어 자동 감지 후 lsel 업데이트
+    var detected = detectLang(code);
+    if(detected && lsel && lsel.value !== detected) {
+      lsel.value = detected;
+    }
+    runCode(code);
+  });
+  on('exec-close-btn','click',function(){
+    var p=getExecEl('exec-panel'); if(!p) return; p.classList.remove('open'); p.classList.add('closed');
+  });
+  on('exec-clear-btn','click',function(){
+    var o=getExecEl('exec-output'); if(o) o.innerHTML='<span class="out-empty">▶ 실행 버튼을 누르면 여기에 결과가 출력됩니다</span>';
+    var t=getExecEl('exec-time'); if(t) t.textContent='';
+    setExecSt('idle','대기');
+  });
+  on('exec-copy-btn','click',function(){
+    var o=getExecEl('exec-output'); if(!o) return;
+    var txt=o.innerText||''; if(!txt||txt.includes('결과가 출력됩니다')) return;
+    navigator.clipboard.writeText(txt).catch(function(){});
+    var btn=document.getElementById('exec-copy-btn');
+    if(btn){var orig=btn.textContent;btn.textContent='✓ 복사됨';setTimeout(function(){btn.textContent=orig;},1500);}
+  });
+
+  function runCode(code) {
+    var lang=lsel?lsel.value:'python';
+    // 현재 선택된 언어로 실행, 감지 결과도 반영
+    var rt=LRT[lang];
+    openExec();
+    // 헤더에 현재 언어 표시
+    var langBadge=document.getElementById('exec-lang-badge');
+    if(langBadge) { langBadge.textContent=lang.toUpperCase(); langBadge.style.display='block'; }
+    var outEl=getExecEl('exec-output'), timeEl=getExecEl('exec-time');
+    var execBtn=getExecEl('execbtn');
+    if(!rt) {
+      if(outEl) outEl.innerHTML='<div class="out-loading"><span style="font-size:24px">🚫</span><div><div class="out-load-title">미지원 언어</div><div class="out-load-sub">'+esc(lang)+'는 현재 실행을 지원하지 않습니다</div></div></div>';
+      setExecSt('error','미지원'); return;
+    }
+    if(execBtn){execBtn.disabled=true;execBtn.innerHTML='<div class="spin"></div> 실행 중...';}
+    if(outEl) outEl.innerHTML='<div class="out-loading"><div class="out-spin"></div><div><div class="out-load-title">컴파일 및 실행 중...</div><div class="out-load-sub">'+esc(rt.language)+' 런타임에 요청 중</div></div></div>';
+    setExecSt('running','실행 중'); if(timeEl) timeEl.textContent='';
+    var stdin=(getExecEl('stdin-input')||{}).value||'', t0=Date.now();
+    var body={language:rt.language, version:rt.version, files:[{name:rt.ext, content:code}]};
+    if(stdin) body.stdin=stdin;
+    fetch(PISTON,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+    .then(function(r){if(!r.ok) throw new Error('HTTP '+r.status); return r.json();})
+    .then(function(d){
+      var elapsed=((Date.now()-t0)/1000).toFixed(3);
+      var run=d.run||{}, comp=d.compile||{};
+      var stdout=(run.stdout||'').trimEnd(), stderr=(run.stderr||'').trimEnd();
+      var cerr=(comp.stderr||'').trimEnd(), cout=(comp.stdout||'').trimEnd();
+      var code_=typeof run.code==='number'?run.code:0, ok=code_===0;
+      if(timeEl) timeEl.textContent=elapsed+'s';
+      setExecSt(ok?'success':'error',ok?'✓ 완료':'✗ 오류');
+      var html='';
+      if(cerr) html+='<div class="out-section out-section-warn"><div class="out-sec-title">⚠ 컴파일 오류</div><div class="out-sec-body stderr">'+esc(cerr)+'</div></div>';
+      if(cout) html+='<div class="out-section"><div class="out-sec-title">📋 컴파일 출력</div><div class="out-sec-body stdout">'+esc(cout)+'</div></div>';
+      if(stdout) html+='<div class="out-section '+(ok?'out-section-ok':'out-section-err')+'"><div class="out-sec-title">'+(ok?'✅':'❌')+' 실행 결과</div><div class="out-sec-body stdout">'+esc(stdout)+'</div></div>';
+      if(stderr) html+='<div class="out-section out-section-err"><div class="out-sec-title">❌ 런타임 오류</div><div class="out-sec-body stderr">'+esc(stderr)+'</div></div>';
+      if(!stdout&&!stderr&&!cerr) html='<div class="out-empty-result"><span style="font-size:20px">'+(ok?'✅':'🔴')+'</span><div><div style="font-weight:600;color:var(--tx)">'+(ok?'정상 종료':'오류 종료')+'</div><div style="font-size:10px;color:var(--tx2)">출력 없음</div></div></div>';
+      html+='<div class="out-footer"><span style="color:'+(ok?'var(--gn)':'var(--rd)')+'">●</span> 종료 코드 <strong>'+code_+'</strong> &nbsp;·&nbsp; <span class="out-lang-badge">'+esc(rt.language)+'</span> &nbsp;·&nbsp; '+elapsed+'s</div>';
+      if(outEl) outEl.innerHTML=html;
+    })
+    .catch(function(e){
+      var elapsed=((Date.now()-t0)/1000).toFixed(3);
+      if(timeEl) timeEl.textContent=elapsed+'s'; setExecSt('error','실패');
+      var msg=e.message||'알 수 없는 오류';
+      if(msg.includes('fetch')||msg.includes('network')||msg.includes('Failed')) msg='네트워크 연결 오류. 인터넷을 확인하거나 잠시 후 재시도해주세요.';
+      if(outEl) outEl.innerHTML='<div class="out-section out-section-err"><div class="out-sec-title">❌ 실행 실패</div><div class="out-sec-body stderr">'+esc(msg)+'</div></div><div class="out-footer" style="color:var(--rd)">● 오류 · '+elapsed+'s</div>';
+    })
+    .finally(function(){if(execBtn){execBtn.disabled=false;execBtn.innerHTML='<span>▶</span> 실행';}});
+  }
+
+  /* ════════════════════════════════════
+     5. 챗봇
+  ════════════════════════════════════ */
+  function renderSidebar() {
+    var body=document.getElementById('chat-sb-body'); if(!body) return;
+    var html='';
+    if(store.projects.length>0){
+      html+='<div class="sb-lbl">📁 프로젝트</div>';
+      store.projects.forEach(function(proj){
+        var chats=store.chats.filter(function(c){return c.projectId===proj.id;}), isOpen=!proj.collapsed;
+        html+='<div><div class="proj-hdr" data-proj-toggle="'+proj.id+'"><span class="proj-lbl"><span style="width:7px;height:7px;border-radius:50%;background:'+proj.color+';display:inline-block;flex-shrink:0"></span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:80px">'+esc(proj.name)+'</span><span style="font-size:9px;opacity:.6">('+chats.length+')</span></span><span class="proj-arr '+(isOpen?'op':'')+'">›</span></div><div class="proj-items '+(isOpen?'op':'')+'"><div class="proj-acts"><button class="proj-act" data-proj-newchat="'+proj.id+'">+ 채팅</button><button class="proj-act" data-proj-del="'+proj.id+'" style="color:var(--rd)">삭제</button></div>'+chats.map(renderChatItem).join('')+'</div></div>';
+      });
+    }
+    var gen=store.chats.filter(function(c){return !c.projectId;});
+    if(gen.length>0){html+='<div class="sb-lbl" style="margin-top:6px">💬 채팅</div>';html+=gen.map(renderChatItem).join('');}
+    if(store.chats.length===0) html='<div style="padding:16px 10px;font-size:10px;color:var(--tx2);text-align:center;opacity:.6">채팅이 없습니다</div>';
+    body.innerHTML=html;
+    body.querySelectorAll('.chat-item').forEach(function(el){el.addEventListener('click',function(e){if(e.target.closest('[data-chat-del]'))return;switchChat(this.dataset.chatId);});});
+    body.querySelectorAll('[data-chat-del]').forEach(function(btn){btn.addEventListener('click',function(e){e.stopPropagation();var cid=this.dataset.chatDel,ch=store.chats.find(function(c){return c.id===cid;});if(ch&&confirm('"'+ch.title+'" 채팅을 삭제할까요?')){deleteChat(cid);if(store.chats.length===0)createChat(null,'새 채팅');switchChat(store.activeChatId||store.chats[0].id);renderSidebar();}});});
+    body.querySelectorAll('[data-proj-toggle]').forEach(function(el){el.addEventListener('click',function(){var p=store.projects.find(function(x){return x.id===this.dataset.projToggle;}.bind(this));if(p){p.collapsed=!p.collapsed;saveStore();renderSidebar();}});});
+    body.querySelectorAll('[data-proj-newchat]').forEach(function(btn){btn.addEventListener('click',function(e){e.stopPropagation();var c=createChat(this.dataset.projNewchat);switchChat(c.id);renderSidebar();var ci=document.getElementById('chat-input');if(ci)ci.focus();});});
+    body.querySelectorAll('[data-proj-del]').forEach(function(btn){btn.addEventListener('click',function(e){e.stopPropagation();var p=store.projects.find(function(x){return x.id===this.dataset.projDel;}.bind(this));if(p&&confirm('"'+p.name+'" 프로젝트와 모든 채팅을 삭제할까요?')){deleteProj(this.dataset.projDel);if(store.chats.length===0)createChat(null,'새 채팅');switchChat(store.activeChatId||store.chats[0].id);renderSidebar();}});});
+  }
+  function renderChatItem(c){var active=c.id===store.activeChatId;return '<div class="chat-item'+(active?' active':'')+'" data-chat-id="'+c.id+'" title="'+esc(c.title)+'"><span class="chat-item-title">'+esc(c.title)+'</span><button class="chat-item-del" data-chat-del="'+c.id+'">✕</button></div>';}
+  function switchChat(id){
+    store.activeChatId=id; saveStore(); chatHistory=[];
+    var c=getChat(); if(!c) return;
+    var ct=document.getElementById('chat-main-title'); if(ct) ct.textContent=c.title;
+    var badge=document.getElementById('chat-proj-badge');
+    if(badge){if(c.projectId){var p=store.projects.find(function(x){return x.id===c.projectId;});if(p){badge.textContent=p.name;badge.style.color=p.color;badge.style.display='block';}}else badge.style.display='none';}
+    chatHistory=(c.history||[]).slice();
+    var msgs=document.getElementById('chat-msgs'); if(!msgs) return;
+    msgs.innerHTML=''; if(c.messages.length===0) addWelcome(); else c.messages.forEach(restoreMsg);
+    scrollChatBot(); renderSidebar();
+  }
+  function restoreMsg(m){var msgs=document.getElementById('chat-msgs');if(!msgs)return;var div=document.createElement('div');div.className='cmsg '+m.role;div.innerHTML='<div class="cbub '+m.role+'">'+m.html+'</div><div class="ctime">'+m.time+'</div>';if(m.code){var b=div.querySelector('.cbub');b.appendChild(document.createElement('br'));b.appendChild(mkApplyBtn(m.code));}msgs.appendChild(div);}
+  function mkApplyBtn(code){var btn=document.createElement('button');btn.className='capply';btn.textContent='↩ 에디터에 적용';btn.addEventListener('click',function(){if(!confirm('에디터의 코드를 교체할까요?'))return;cta.value=code;updLN();switchLeft('editor');cta.style.outline='2px solid #3fb950';setTimeout(function(){cta.style.outline='';},1500);});return btn;}
+  function addWelcome(){var msgs=document.getElementById('chat-msgs');if(!msgs)return;var div=document.createElement('div');div.className='cmsg bot';div.innerHTML='<div class="cbub bot">👋 안녕하세요! 코드 AI 어시스턴트입니다.<br><br>• <code>버블정렬 구현해줘</code><br>• <code>현재 코드 설명해줘</code><br>• <code>이 코드를 최적화해줘</code></div><div class="ctime">'+nowT()+'</div>';msgs.appendChild(div);}
+  function scrollChatBot(){var m=document.getElementById('chat-msgs');if(m)setTimeout(function(){m.scrollTop=m.scrollHeight;},50);}
+  function appendChatMsg(role,html,code){var msgs=document.getElementById('chat-msgs');if(!msgs)return;var div=document.createElement('div');div.className='cmsg '+role;var time=nowT();div.innerHTML='<div class="cbub '+role+'">'+html+'</div><div class="ctime">'+time+'</div>';if(code){var b=div.querySelector('.cbub');b.appendChild(document.createElement('br'));b.appendChild(mkApplyBtn(code));}msgs.appendChild(div);scrollChatBot();var c=getChat();if(c){c.messages.push({role:role,html:html,time:time,code:code||''});c.updatedAt=Date.now();saveStore();}return div;}
+  function appendTyping(){var msgs=document.getElementById('chat-msgs');if(!msgs)return;var div=document.createElement('div');div.className='cmsg bot';div.id='chat-typing';div.innerHTML='<div style="display:flex;align-items:center;gap:4px;padding:8px 11px;background:var(--bg2);border:1px solid var(--bd);border-radius:10px 10px 10px 3px"><div class="cdot"></div><div class="cdot"></div><div class="cdot"></div></div>';msgs.appendChild(div);scrollChatBot();}
+  function removeTyping(){var t=document.getElementById('chat-typing');if(t)t.remove();}
+  function fmtBot(text){text=text.replace(/```(\w*)\n?([\s\S]*?)```/g,function(_,l,c){return '<pre>'+esc(c.trim())+'</pre>';});text=text.replace(/`([^`]+)`/g,function(_,c){return '<code>'+esc(c)+'</code>';});text=text.replace(/\n/g,'<br>');text=text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');return text;}
+  function extractCode(text){var m=text.match(/```(?:\w*)\n?([\s\S]*?)```/);return m?m[1].trim():'';}
+
+  on('new-chat-btn','click',function(){var c=createChat(null);switchChat(c.id);renderSidebar();var ci=document.getElementById('chat-input');if(ci)ci.focus();});
+  var pmCb=null;
+  function openPM(title,cb){var pt=document.getElementById('pm-title'),pi=document.getElementById('pm-input'),po=document.getElementById('pm-overlay');if(pt)pt.textContent=title;if(pi)pi.value='';pmCb=cb;if(po)po.classList.add('show');setTimeout(function(){if(pi)pi.focus();},50);}
+  on('new-proj-btn','click',function(){openPM('📁 새 프로젝트',function(name){createProj(name);renderSidebar();});});
+  on('pm-ok','click',function(){var pi=document.getElementById('pm-input'),name=pi?pi.value.trim():'';if(!name){if(pi)pi.focus();return;}var po=document.getElementById('pm-overlay');if(po)po.classList.remove('show');if(pmCb)pmCb(name);});
+  on('pm-cancel','click',function(){var po=document.getElementById('pm-overlay');if(po)po.classList.remove('show');});
+  var pmIn=document.getElementById('pm-input');
+  if(pmIn)pmIn.addEventListener('keydown',function(e){if(e.key==='Enter')document.getElementById('pm-ok').click();if(e.key==='Escape')document.getElementById('pm-cancel').click();});
+  var chatTa=document.getElementById('chat-input');
+  if(chatTa){chatTa.addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px';});chatTa.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat();}});}
+  document.querySelectorAll('.chat-sugg').forEach(function(s){s.addEventListener('click',function(){if(chatTa)chatTa.value=this.dataset.q||this.textContent;sendChat();});});
+  on('chat-send-btn','click',sendChat);
+
+  function sendChat(){
+    if(needKey()) return;
+    var msg=chatTa?chatTa.value.trim():''; if(!msg) return;
+    if(chatTa){chatTa.value='';chatTa.style.height='auto';}
+    var csb=document.getElementById('chat-send-btn');if(csb)csb.disabled=true;
+    if(!store.activeChatId||!getChat()){var nc=createChat(null);switchChat(nc.id);}
+    appendChatMsg('user',esc(msg));
+    var c=getChat();
+    if(c&&c.messages.length===1){c.title=msg.slice(0,22).trim()+(msg.length>22?'...':'');saveStore();var ct=document.getElementById('chat-main-title');if(ct)ct.textContent=c.title;renderSidebar();}
+    var code=cta.value.trim(),lang=lsel.value,ctx=code?'\n\n[현재 에디터 코드 - '+lang+']\n```'+lang+'\n'+code+'\n```':'';
+    chatHistory.push({role:'user',content:msg+ctx});
+    if(chatHistory.length>20)chatHistory=chatHistory.slice(-20);
+    if(c){c.history=chatHistory.slice();saveStore();}
+    appendTyping();
+    callGroq([{role:'system',content:'전문 코드 AI 어시스턴트. 코드 요청 시 완전하고 실행 가능한 코드 제공. 마크다운 코드블록 사용. 한국어 답변. 한국어 주석.'}].concat(chatHistory),0,false)
+    .then(function(raw){removeTyping();chatHistory.push({role:'assistant',content:raw});if(c){c.history=chatHistory.slice();saveStore();}appendChatMsg('bot',fmtBot(raw),extractCode(raw));renderSidebar();})
+    .catch(function(err){removeTyping();appendChatMsg('bot','❌ 오류: '+esc(err.message));chatHistory.pop();})
+    .finally(function(){if(csb)csb.disabled=false;});
+  }
+
+  /* ════════════════════════════════════
+     초기화
+  ════════════════════════════════════ */
+  cta.value = S.buggy; updLN();
+  if(store.chats.length===0) createChat(null,'새 채팅');
+  var initId = store.activeChatId || (store.chats[0]&&store.chats[0].id);
+  if(initId) switchChat(initId);
+  renderSidebar();
+
+}); // window.load 끝
+</script>
+
+
+
+<!-- ════════════════════════════════════════ -->
+<!-- 🤝 협업 시스템 패널                      -->
+<!-- ════════════════════════════════════════ -->
+<div id="collab-panel" style="position:fixed;inset:0;z-index:500;background:var(--bg);flex-direction:column;display:none">
+
+  <!-- COLLAB HEADER -->
+  <div style="background:var(--bg2);border-bottom:1px solid var(--bd);padding:0 18px;height:50px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="width:26px;height:26px;background:linear-gradient(135deg,#1f6feb,#8a2be2);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px">🤝</div>
+      <span style="font-size:14px;font-weight:600">협업 시스템</span>
+      <!-- 브레드크럼 -->
+      <div id="cb-breadcrumb" style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--tx2)"></div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <span id="cb-status" style="font-size:10px;padding:2px 8px;border-radius:10px;background:var(--gnb);color:var(--gn);border:1px solid rgba(63,185,80,.3)">● 연결됨</span>
+      <button id="collab-close-btn" style="background:var(--bg3);color:var(--tx2);border:1px solid var(--bd);border-radius:6px;padding:5px 12px;font-size:11px;cursor:pointer">✕ 닫기</button>
+    </div>
+  </div>
+
+  <!-- COLLAB BODY -->
+  <div style="display:flex;flex:1;overflow:hidden;min-height:0">
+
+    <!-- LEFT SIDEBAR -->
+    <div style="width:220px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--bd);display:flex;flex-direction:column;overflow:hidden">
+      <div style="padding:10px;border-bottom:1px solid var(--bd);flex-shrink:0">
+        <button id="cb-new-repo-btn" style="width:100%;background:linear-gradient(135deg,#1f6feb,#8a2be2);color:#fff;border:none;border-radius:6px;padding:7px;font-size:11px;font-weight:600;cursor:pointer;margin-bottom:6px">+ 새 저장소</button>
+        <input id="cb-search" placeholder="저장소 검색..." style="width:100%;background:var(--bg3);border:1px solid var(--bd);border-radius:5px;padding:5px 8px;font-size:10px;color:var(--tx);outline:none">
+      </div>
+      <div id="cb-repo-list" style="flex:1;overflow-y:auto;padding:6px 0"></div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0">
+
+      <!-- CONTENT NAV TABS -->
+      <div id="cb-nav" style="display:flex;background:var(--bg2);border-bottom:1px solid var(--bd);flex-shrink:0">
+        <div class="cb-nav-tab active" data-view="overview">📋 개요</div>
+        <div class="cb-nav-tab" data-view="branches">🌿 브랜치</div>
+        <div class="cb-nav-tab" data-view="prs">🔀 Pull Requests</div>
+        <div class="cb-nav-tab" data-view="activity">📊 활동 로그</div>
+        <div class="cb-nav-tab" data-view="aireview">🤖 AI 리뷰</div>
+      </div>
+
+      <!-- CONTENT AREA -->
+      <div id="cb-content" style="flex:1;overflow-y:auto"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PR 생성 모달 -->
+<div id="cb-pr-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:600;align-items:center;justify-content:center">
+  <div style="background:var(--bg2);border:1px solid var(--bd);border-radius:12px;width:560px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden">
+    <div style="padding:14px 16px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+      <span style="font-size:13px;font-weight:600">🔀 Pull Request 생성</span>
+      <button id="cb-pr-modal-close" style="background:none;border:none;color:var(--tx2);font-size:18px;cursor:pointer">✕</button>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px">
+      <div>
+        <label style="font-size:10px;color:var(--tx2);font-weight:600;display:block;margin-bottom:4px">제목</label>
+        <input id="cb-pr-title" style="width:100%;background:var(--bg3);border:1px solid var(--bd);border-radius:6px;padding:7px 10px;font-size:12px;color:var(--tx);outline:none" placeholder="PR 제목 입력...">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <label style="font-size:10px;color:var(--tx2);font-weight:600;display:block;margin-bottom:4px">소스 브랜치</label>
+          <select id="cb-pr-src" style="width:100%;background:var(--bg3);border:1px solid var(--bd);border-radius:6px;padding:6px 8px;font-size:11px;color:var(--tx);outline:none"></select>
+        </div>
+        <div>
+          <label style="font-size:10px;color:var(--tx2);font-weight:600;display:block;margin-bottom:4px">대상 브랜치</label>
+          <select id="cb-pr-tgt" style="width:100%;background:var(--bg3);border:1px solid var(--bd);border-radius:6px;padding:6px 8px;font-size:11px;color:var(--tx);outline:none"></select>
+        </div>
+      </div>
+      <div>
+        <label style="font-size:10px;color:var(--tx2);font-weight:600;display:block;margin-bottom:4px">설명</label>
+        <textarea id="cb-pr-desc" style="width:100%;background:var(--bg3);border:1px solid var(--bd);border-radius:6px;padding:7px 10px;font-size:11px;color:var(--tx);outline:none;resize:vertical;min-height:80px" placeholder="변경 사항 설명..."></textarea>
+      </div>
+      <div>
+        <label style="font-size:10px;color:var(--tx2);font-weight:600;display:block;margin-bottom:6px">리뷰어 지정</label>
+        <div id="cb-pr-reviewers" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+      </div>
+      <div>
+        <label style="font-size:10px;color:var(--tx2);font-weight:600;display:block;margin-bottom:4px">소스 코드 (before)</label>
+        <textarea id="cb-pr-before" style="width:100%;background:var(--bg);border:1px solid var(--bd);border-radius:6px;padding:7px 10px;font-size:11px;color:var(--tx);outline:none;resize:vertical;min-height:80px;font-family:var(--mono)" placeholder="변경 전 코드..."></textarea>
+      </div>
+      <div>
+        <label style="font-size:10px;color:var(--tx2);font-weight:600;display:block;margin-bottom:4px">변경 후 코드 (after)</label>
+        <textarea id="cb-pr-after" style="width:100%;background:var(--bg);border:1px solid var(--bd);border-radius:6px;padding:7px 10px;font-size:11px;color:var(--tx);outline:none;resize:vertical;min-height:80px;font-family:var(--mono)" placeholder="변경 후 코드..."></textarea>
+      </div>
+    </div>
+    <div style="padding:12px 16px;border-top:1px solid var(--bd);display:flex;gap:8px;justify-content:flex-end;flex-shrink:0">
+      <button id="cb-pr-cancel" style="padding:7px 18px;background:var(--bg3);color:var(--tx2);border:1px solid var(--bd);border-radius:6px;font-size:11px;cursor:pointer">취소</button>
+      <button id="cb-pr-submit" style="padding:7px 18px;background:linear-gradient(135deg,#1f6feb,#8a2be2);color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer">PR 생성</button>
+    </div>
+  </div>
+</div>
+
+<!-- 저장소 생성 모달 -->
+<div id="cb-repo-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:600;align-items:center;justify-content:center">
+  <div style="background:var(--bg2);border:1px solid var(--bd);border-radius:10px;width:400px;padding:20px">
+    <h3 style="font-size:13px;margin-bottom:14px">📁 새 저장소 생성</h3>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div>
+        <label style="font-size:10px;color:var(--tx2);font-weight:600;display:block;margin-bottom:4px">저장소 이름</label>
+        <input id="cb-repo-name" style="width:100%;background:var(--bg3);border:1px solid var(--bd);border-radius:6px;padding:7px 10px;font-size:12px;color:var(--tx);outline:none" placeholder="my-project">
+      </div>
+      <div>
+        <label style="font-size:10px;color:var(--tx2);font-weight:600;display:block;margin-bottom:4px">설명</label>
+        <input id="cb-repo-desc" style="width:100%;background:var(--bg3);border:1px solid var(--bd);border-radius:6px;padding:7px 10px;font-size:11px;color:var(--tx);outline:none" placeholder="프로젝트 설명...">
+      </div>
+      <div style="display:flex;gap:6px">
+        <label style="font-size:10px;color:var(--tx2);font-weight:600;display:block;margin-bottom:4px;flex:1">멤버 추가 (쉼표 구분)</label>
+      </div>
+      <input id="cb-repo-members" style="width:100%;background:var(--bg3);border:1px solid var(--bd);border-radius:6px;padding:7px 10px;font-size:11px;color:var(--tx);outline:none" placeholder="alice, bob, charlie">
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px">
+      <button id="cb-repo-cancel" style="padding:6px 14px;background:var(--bg3);color:var(--tx2);border:1px solid var(--bd);border-radius:6px;font-size:11px;cursor:pointer">취소</button>
+      <button id="cb-repo-ok" style="padding:6px 14px;background:var(--ac2);color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer">생성</button>
+    </div>
+  </div>
+</div>
+
+<style>
+/* COLLAB STYLES */
+.cb-nav-tab{padding:10px 16px;font-size:11px;cursor:pointer;color:var(--tx2);border-bottom:2px solid transparent;transition:all .15s;user-select:none;white-space:nowrap}
+.cb-nav-tab:hover{color:var(--tx)}
+.cb-nav-tab.active{color:var(--ac);border-bottom-color:var(--ac)}
+.cb-repo-item{padding:8px 12px;cursor:pointer;border-radius:6px;margin:2px 6px;transition:background .15s;display:flex;align-items:center;gap:8px}
+.cb-repo-item:hover{background:var(--bg3)}
+.cb-repo-item.active{background:var(--bg3);border-left:2px solid var(--ac)}
+.cb-repo-ico{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.cb-card{background:var(--bg2);border:1px solid var(--bd);border-radius:8px;margin-bottom:10px;overflow:hidden}
+.cb-card-hdr{padding:12px 14px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between}
+.cb-badge{font-size:9px;padding:2px 8px;border-radius:10px;font-weight:600}
+.cb-badge-open{background:rgba(63,185,80,.15);color:var(--gn);border:1px solid rgba(63,185,80,.3)}
+.cb-badge-closed{background:var(--rdb);color:var(--rd);border:1px solid rgba(248,81,73,.3)}
+.cb-badge-merged{background:rgba(188,140,255,.15);color:var(--pu);border:1px solid rgba(188,140,255,.3)}
+.cb-badge-review{background:rgba(210,153,34,.15);color:var(--am);border:1px solid rgba(210,153,34,.3)}
+.cb-badge-approved{background:rgba(63,185,80,.15);color:var(--gn);border:1px solid rgba(63,185,80,.3)}
+.cb-badge-main{background:rgba(88,166,255,.15);color:var(--ac);border:1px solid rgba(88,166,255,.3)}
+.diff-line{font-family:var(--mono);font-size:11px;line-height:1.6;padding:1px 10px;white-space:pre;display:flex;gap:0}
+.diff-line.add{background:rgba(63,185,80,.12);color:#7ee787}
+.diff-line.del{background:rgba(248,81,73,.12);color:#ff7b72}
+.diff-line.ctx{color:var(--tx2)}
+.diff-line-num{min-width:36px;color:var(--tx2);font-size:10px;user-select:none;flex-shrink:0;padding-right:8px;text-align:right;opacity:.6}
+.diff-sym{min-width:14px;flex-shrink:0}
+.diff-content{flex:1}
+.comment-thread{background:var(--bg3);border:1px solid var(--bd);border-radius:6px;margin:4px 0;padding:8px 10px}
+.comment-msg{font-size:11px;color:var(--tx);line-height:1.5;margin-bottom:4px}
+.comment-meta{font-size:9px;color:var(--tx2);display:flex;align-items:center;gap:8px}
+.reaction-btn{font-size:11px;padding:2px 6px;background:var(--bg2);border:1px solid var(--bd);border-radius:4px;cursor:pointer;transition:all .15s}
+.reaction-btn:hover{border-color:var(--ac)}
+.reaction-btn.active{background:rgba(88,166,255,.15);border-color:var(--ac)}
+.member-avatar{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0}
+.activity-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid rgba(48,54,61,.4)}
+.activity-item:last-child{border-bottom:none}
+.activity-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.merge-rule{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--bg3);border-radius:6px;margin-bottom:6px}
+.toggle-switch{position:relative;width:36px;height:20px;cursor:pointer}
+.toggle-switch input{opacity:0;width:0;height:0;position:absolute}
+.toggle-track{position:absolute;inset:0;background:var(--bd);border-radius:10px;transition:background .2s}
+.toggle-switch input:checked + .toggle-track{background:var(--gn)}
+.toggle-thumb{position:absolute;width:14px;height:14px;background:#fff;border-radius:50%;top:3px;left:3px;transition:transform .2s}
+.toggle-switch input:checked ~ .toggle-thumb{transform:translateX(16px)}
+.pr-diff-split{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--bd);border-radius:6px;overflow:hidden;font-family:var(--mono);font-size:11px}
+.diff-pane-hdr{padding:6px 10px;background:var(--bg3);border-bottom:1px solid var(--bd);font-size:10px;font-weight:600;color:var(--tx2)}
+.inline-comment-form{display:none;background:var(--bg2);border:1px solid var(--bd);border-radius:6px;padding:10px;margin:4px 0}
+.inline-comment-form.show{display:block}
+</style>
+
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   🤝 협업 + 🤖 AI 하이브리드 리뷰 시스템
+   ═══════════════════════════════════════════════════════════════ */
+(function () {
+  'use strict';
+
+  /* ── 상수 ── */
+  var CKEY = 'codereview_collab_v2';
+  var ME   = 'me';
+  var PROJ_COLORS = ['#58a6ff','#3fb950','#d29922','#f85149','#bc8cff','#39d2c0','#ff8c42'];
+  var PROJ_EMOJIS = ['🚀','💡','⚡','🔥','🌟','🛠️','🎯','🏗️'];
+  var LOG_ICO  = {repo_created:'🏗️',branch_created:'🌿',pr_opened:'🔀',pr_approved:'✅',pr_merged:'🎉',pr_closed:'❌',commented:'💬',ai_reviewed:'🤖',change_requested:'🔄'};
+  var LOG_CLR  = {repo_created:'#58a6ff',branch_created:'#3fb950',pr_opened:'#58a6ff',pr_approved:'#3fb950',pr_merged:'#bc8cff',pr_closed:'#f85149',commented:'#d29922',ai_reviewed:'#bc8cff',change_requested:'#d29922'};
+
+  /* ── 상태 ── */
+  var cs           = null;
+  var activeRepoId = null;
+  var activeView   = 'overview';
+  var activePrId   = null;
+
+  /* ── 유틸 ── */
+  function gid()  { return Date.now().toString(36) + Math.random().toString(36).slice(2,5); }
+  function E(s)   { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function ago(ts){
+    var d = Date.now() - ts;
+    if (d < 60000)    return '방금';
+    if (d < 3600000)  return Math.floor(d/60000)   + '분 전';
+    if (d < 86400000) return Math.floor(d/3600000)  + '시간 전';
+    return Math.floor(d/86400000) + '일 전';
+  }
+  function avatar(name, sz) {
+    sz = sz || 22;
+    var cols = ['#58a6ff','#3fb950','#d29922','#f85149','#bc8cff','#39d2c0'];
+    var c = cols[(name||'?').charCodeAt(0) % cols.length];
+    return '<div style="width:'+sz+'px;height:'+sz+'px;border-radius:50%;background:'+c+';color:#fff;'
+         + 'display:inline-flex;align-items:center;justify-content:center;font-size:'+(sz*0.44|0)+'px;'
+         + 'font-weight:700;flex-shrink:0">'+E((name||'?').slice(0,1).toUpperCase())+'</div>';
+  }
+  function badge(txt, color, bg, border) {
+    return '<span style="font-size:9px;padding:2px 8px;border-radius:10px;font-weight:600;'
+         + 'background:'+bg+';color:'+color+';border:1px solid '+border+'">'+txt+'</span>';
+  }
+  function btn(id, label, style) {
+    return '<button id="'+id+'" style="'+style+'">'+label+'</button>';
+  }
+
+  /* ── 스토리지 ── */
+  function load() {
+    try { return JSON.parse(localStorage.getItem(CKEY)) || seed(); } catch(e) { return seed(); }
+  }
+  function save() { try { localStorage.setItem(CKEY, JSON.stringify(cs)); } catch(e) {} }
+
+  function seed() {
+    var rid=gid(), bid1=gid(), bid2=gid(), pid=gid();
+    return {
+      repos:[{id:rid,name:'demo-project',desc:'협업 데모 저장소',owner:ME,
+        members:[ME,'alice','bob'],color:'#58a6ff',emoji:'🚀',
+        mergeRules:{requireApproval:true,minApprovals:1,requireCI:false,deleteBranch:true},
+        createdAt:Date.now()-86400000*3}],
+      branches:[
+        {id:bid1,repoId:rid,name:'main',isDefault:true,author:ME,commits:12,lastCommit:'초기 커밋',updatedAt:Date.now()-7200000},
+        {id:bid2,repoId:rid,name:'feature/ai-review',isDefault:false,author:'alice',commits:5,lastCommit:'AI 리뷰 기능 추가',updatedAt:Date.now()-1800000}
+      ],
+      prs:[{id:pid,repoId:rid,title:'AI 코드 리뷰 기능 추가',
+        desc:'Groq API를 활용한 자동 코드 리뷰 기능입니다.\n\n- 버그 탐지\n- 성능 분석\n- 스타일 검사',
+        src:'feature/ai-review',tgt:'main',author:'alice',reviewers:[ME,'bob'],
+        status:'open',approvals:['bob'],
+        before:'def review(code):\n    pass',
+        after:'def review(code):\n    # AI 기반 분석\n    result = analyze(code)\n    return result\n\ndef analyze(code):\n    return {"score": 85, "issues": []}',
+        comments:[{id:gid(),lineNum:2,content:'analyze 함수 분리가 깔끔합니다!',author:'bob',
+          reactions:{'👍':[ME],'👎':[],'🎉':[],'❓':[]},createdAt:Date.now()-3600000}],
+        activity:[
+          {type:'created',author:'alice',desc:'PR 오픈',time:Date.now()-7200000},
+          {type:'approved',author:'bob',desc:'승인',time:Date.now()-3600000}
+        ],
+        aiReviews:[],createdAt:Date.now()-7200000}],
+      log:[
+        {id:gid(),repoId:rid,type:'repo_created',author:ME,desc:'저장소 생성',time:Date.now()-86400000*3},
+        {id:gid(),repoId:rid,type:'branch_created',author:'alice',desc:'feature/ai-review 생성',time:Date.now()-7200000},
+        {id:gid(),repoId:rid,type:'pr_opened',author:'alice',desc:'PR: AI 코드 리뷰 기능 추가',time:Date.now()-7200000},
+        {id:gid(),repoId:rid,type:'pr_approved',author:'bob',desc:'PR 승인',time:Date.now()-3600000}
+      ]
+    };
+  }
+  function addLog(repoId, type, author, desc) {
+    cs.log.push({id:gid(),repoId:repoId,type:type,author:author,desc:desc,time:Date.now()});
+  }
+
+  /* ══════════════════════════════════════
+     초기화
+  ══════════════════════════════════════ */
+  function init() {
+    cs           = load();
+    activeRepoId = cs.repos.length ? cs.repos[0].id : null;
+
+    var panel   = document.getElementById('collab-panel');
+    var toggleB = document.getElementById('collab-toggle-btn');
+    var closeB  = document.getElementById('collab-close-btn');
+    if (!panel || !toggleB) return;
+
+    toggleB.addEventListener('click', function () {
+      if (panel.style.display === 'flex') {
+        panel.style.display = 'none';
+      } else {
+        panel.style.display = 'flex';
+        renderAll();
+      }
+    });
+    if (closeB) closeB.addEventListener('click', function () { panel.style.display = 'none'; });
+
+    /* 메인 네비 탭 */
+    document.querySelectorAll('.cb-nav-tab').forEach(function (t) {
+      t.addEventListener('click', function () {
+        activeView   = this.dataset.view;
+        activePrId   = null;
+        document.querySelectorAll('.cb-nav-tab').forEach(function (x) { x.classList.remove('active'); });
+        this.classList.add('active');
+        renderContent();
+        updateBc();
+      });
+    });
+
+    /* 검색 */
+    var srch = document.getElementById('cb-search');
+    if (srch) srch.addEventListener('input', renderRepoList);
+
+    /* 저장소 모달 */
+    var nrb = document.getElementById('cb-new-repo-btn');
+    if (nrb) nrb.addEventListener('click', openRepoModal);
+    var rOk = document.getElementById('cb-repo-ok');
+    if (rOk) rOk.addEventListener('click', submitRepo);
+    var rCn = document.getElementById('cb-repo-cancel');
+    if (rCn) rCn.addEventListener('click', function () { q('cb-repo-modal').style.display='none'; });
+
+    /* PR 모달 닫기 */
+    var pmc = document.getElementById('cb-pr-modal-close');
+    if (pmc) pmc.addEventListener('click', function () { q('cb-pr-modal').style.display='none'; });
+    var pca = document.getElementById('cb-pr-cancel');
+    if (pca) pca.addEventListener('click', function () { q('cb-pr-modal').style.display='none'; });
+  }
+
+  function q(id) { return document.getElementById(id); }
+
+  /* ══════════════════════════════════════
+     렌더링 진입점
+  ══════════════════════════════════════ */
+  function renderAll() { renderRepoList(); renderNavTabs(); renderContent(); updateBc(); }
+
+  function renderNavTabs() {
+    document.querySelectorAll('.cb-nav-tab').forEach(function (t) {
+      t.classList.toggle('active', t.dataset.view === activeView);
+    });
+  }
+
+  function updateBc() {
+    var el = q('cb-breadcrumb');
+    if (!el) return;
+    var repo = getRepo();
+    var parts = [];
+    if (repo) parts.push('<span id="cb-bc-home" style="cursor:pointer;color:#58a6ff">'+E(repo.name)+'</span>');
+    if (activePrId) {
+      var pr = getPR();
+      if (pr) parts.push('<span style="color:#444c56"> › </span><span style="color:#8b949e">'+E(pr.title.slice(0,28))+'...</span>');
+    }
+    el.innerHTML = parts.join('');
+    var h = q('cb-bc-home');
+    if (h) h.addEventListener('click', function () { activePrId=null; activeView='overview'; renderAll(); });
+  }
+
+  function getRepo() { return cs.repos.find(function(r){return r.id===activeRepoId;})||null; }
+  function getPR()   { return cs.prs.find(function(p){return p.id===activePrId;})||null; }
+
+  function renderContent() {
+    var el   = q('cb-content');
+    var repo = getRepo();
+    if (!el) return;
+    if (!repo) { el.innerHTML = wrap('<div style="padding:60px;text-align:center;color:#8b949e;font-size:13px">👈 저장소를 선택하거나 새로 만드세요</div>'); return; }
+    updateBc();
+    if (activePrId) { renderPRDetail(el, repo); return; }
+    var views = {overview:renderOverview, branches:renderBranches, prs:renderPRList, activity:renderActivity, aireview:renderAIHub};
+    if (views[activeView]) views[activeView](el, repo);
+  }
+
+  function wrap(inner) { return '<div style="padding:20px;max-width:900px">'+inner+'</div>'; }
+
+  /* ══════════════════════════════════════
+     저장소 목록 사이드바
+  ══════════════════════════════════════ */
+  function renderRepoList() {
+    var el = q('cb-repo-list');
+    if (!el) return;
+    var q2 = ((q('cb-search')||{}).value||'').toLowerCase();
+    var list = cs.repos.filter(function(r){ return !q2||r.name.toLowerCase().includes(q2); });
+    if (!list.length) { el.innerHTML='<div style="padding:16px;font-size:10px;color:#8b949e;text-align:center">저장소 없음</div>'; return; }
+    el.innerHTML = list.map(function(r){
+      var open = cs.prs.filter(function(p){return p.repoId===r.id&&p.status==='open';}).length;
+      return '<div class="cb-repo-item'+(r.id===activeRepoId?' active':'')+'" data-rid="'+r.id+'">'
+        +'<div style="width:28px;height:28px;border-radius:7px;background:'+r.color+'22;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">'+r.emoji+'</div>'
+        +'<div style="flex:1;min-width:0"><div style="font-size:11px;font-weight:600;color:#e6edf3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+E(r.name)+'</div>'
+        +'<div style="font-size:9px;color:#8b949e">'+r.members.length+'명'+(open?' · PR '+open:'')+'</div></div></div>';
+    }).join('');
+    el.querySelectorAll('[data-rid]').forEach(function(item){
+      item.addEventListener('click', function(){ activeRepoId=this.dataset.rid; activeView='overview'; activePrId=null; renderAll(); });
+    });
+  }
+
+  /* ══════════════════════════════════════
+     개요 탭
+  ══════════════════════════════════════ */
+  function renderOverview(el, repo) {
+    var brs  = cs.branches.filter(function(b){return b.repoId===repo.id;});
+    var prs  = cs.prs.filter(function(p){return p.repoId===repo.id;});
+    var logs = cs.log.filter(function(a){return a.repoId===repo.id;}).slice(-6).reverse();
+
+    el.innerHTML = wrap(
+      /* 헤더 */
+      '<div style="display:flex;align-items:center;gap:14px;margin-bottom:20px">'
+        +'<div style="width:52px;height:52px;border-radius:12px;background:'+repo.color+'22;display:flex;align-items:center;justify-content:center;font-size:28px">'+repo.emoji+'</div>'
+        +'<div><div style="font-size:18px;font-weight:700;color:#e6edf3">'+E(repo.name)+'</div>'
+        +'<div style="font-size:12px;color:#8b949e;margin-top:2px">'+E(repo.desc)+'</div></div>'
+        +'<div style="margin-left:auto;display:flex;gap:8px">'
+        +'<button id="ov-br" style="padding:6px 14px;background:#21262d;color:#e6edf3;border:1px solid #30363d;border-radius:6px;font-size:11px;cursor:pointer">🌿 새 브랜치</button>'
+        +'<button id="ov-pr" style="padding:6px 14px;background:linear-gradient(135deg,#1f6feb,#8a2be2);color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer">🔀 PR 생성</button>'
+        +'</div></div>'
+      /* 통계 */
+      + '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px">'
+        + statCard('🌿','브랜치',brs.length)
+        + statCard('🔀','열린 PR',prs.filter(function(p){return p.status==='open';}).length)
+        + statCard('👥','멤버',repo.members.length)
+        + statCard('✅','머지됨',prs.filter(function(p){return p.status==='merged';}).length)
+      + '</div>'
+      /* 머지 규칙 */
+      + card('⚙️ 머지 규칙',
+          mrRow('requireApproval','승인 필수','머지 전 리뷰어 승인 필요',repo)
+        + mrRow('requireCI','CI 통과 필수','자동화 테스트 통과 필요',repo)
+        + mrRow('deleteBranch','머지 후 브랜치 삭제','소스 브랜치 자동 삭제',repo), 'mb:14px')
+      /* 멤버 */
+      + card('<span>👥 멤버 ('+repo.members.length+')</span>'
+          +'<button id="ov-addmember" style="font-size:10px;padding:3px 10px;background:#21262d;color:#8b949e;border:1px solid #30363d;border-radius:5px;cursor:pointer">+ 추가</button>',
+          '<div style="display:flex;gap:8px;flex-wrap:wrap">'
+          +repo.members.map(function(m){
+            return '<div style="display:flex;align-items:center;gap:6px;padding:5px 10px;background:#21262d;border-radius:6px">'
+              +avatar(m,20)+' <span style="font-size:11px;color:#e6edf3">'+E(m)+'</span>'
+              +(m===repo.owner?'<span style="font-size:9px;color:#d29922;font-weight:600"> owner</span>':'')+'</div>';
+          }).join('')+'</div>', 'mb:14px')
+      /* 활동 */
+      + card('📊 최근 활동',
+          (logs.length?logs.map(logRow).join(''):'<div style="padding:14px;text-align:center;color:#8b949e;font-size:11px">활동 없음</div>'), '')
+    );
+
+    on('ov-br', function(){ newBranch(repo); });
+    on('ov-pr', function(){ openPRModal(repo, null); });
+    on('ov-addmember', function(){
+      var n=prompt('멤버 이름:'); if(n&&n.trim()&&repo.members.indexOf(n.trim())===-1){repo.members.push(n.trim());save();renderContent();}
+    });
+    el.querySelectorAll('[data-rule]').forEach(function(inp){
+      inp.addEventListener('change', function(){ repo.mergeRules[this.dataset.rule]=this.checked; save(); });
+    });
+  }
+
+  function card(title, body, extraStyle) {
+    var style = 'background:#161b22;border:1px solid #30363d;border-radius:8px;overflow:hidden;';
+    if (extraStyle) style += extraStyle.replace('mb:','margin-bottom:')+'px;';
+    return '<div style="'+style+'">'
+      +'<div style="padding:10px 14px;border-bottom:1px solid #30363d;display:flex;align-items:center;justify-content:space-between">'
+      +'<span style="font-size:12px;font-weight:600;color:#e6edf3">'+title+'</span></div>'
+      +'<div style="padding:10px 14px">'+body+'</div></div>';
+  }
+  function statCard(icon,label,val){
+    return '<div style="background:#161b22;border:1px solid #30363d;border-radius:8px;padding:14px;text-align:center">'
+      +'<div style="font-size:20px;margin-bottom:4px">'+icon+'</div>'
+      +'<div style="font-size:22px;font-weight:700;color:#58a6ff">'+val+'</div>'
+      +'<div style="font-size:10px;color:#8b949e">'+label+'</div></div>';
+  }
+  function mrRow(key, label, desc, repo) {
+    var on = repo.mergeRules[key];
+    var c  = on ? '#3fb950' : '#30363d';
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(48,54,61,.4)">'
+      +'<div><div style="font-size:11px;font-weight:500;color:#e6edf3">'+label+'</div>'
+      +'<div style="font-size:10px;color:#8b949e">'+desc+'</div></div>'
+      +'<label style="position:relative;width:36px;height:20px;cursor:pointer;flex-shrink:0">'
+      +'<input type="checkbox" data-rule="'+key+'" '+(on?'checked':'')
+      +' style="opacity:0;width:0;height:0;position:absolute">'
+      +'<div style="position:absolute;inset:0;background:'+c+';border-radius:10px;transition:background .2s"></div>'
+      +'<div style="position:absolute;width:14px;height:14px;background:#fff;border-radius:50%;top:3px;left:'+(on?19:3)+'px;transition:left .2s"></div>'
+      +'</label></div>';
+  }
+  function logRow(a) {
+    return '<div style="display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid rgba(48,54,61,.35)">'
+      +'<div style="width:7px;height:7px;border-radius:50%;background:'+(LOG_CLR[a.type]||'#58a6ff')+';flex-shrink:0;margin-top:5px"></div>'
+      +'<div style="flex:1;font-size:10.5px;color:#8b949e">'+(LOG_ICO[a.type]||'•')+' '+avatar(a.author,15)+' '
+      +'<strong style="color:#e6edf3">'+E(a.author)+'</strong> '+E(a.desc)+'</div>'
+      +'<span style="font-size:9px;color:#8b949e;white-space:nowrap">'+ago(a.time)+'</span></div>';
+  }
+  function on(id, fn) { var el=q(id); if(el) el.addEventListener('click', fn); }
+
+  /* ══════════════════════════════════════
+     브랜치 탭
+  ══════════════════════════════════════ */
+  function renderBranches(el, repo) {
+    var brs = cs.branches.filter(function(b){return b.repoId===repo.id;});
+    el.innerHTML = wrap(
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">'
+      +'<h2 style="font-size:15px;font-weight:700;color:#e6edf3">🌿 브랜치 ('+brs.length+')</h2>'
+      +'<button id="br-new" style="padding:6px 14px;background:linear-gradient(135deg,#1f6feb,#8a2be2);color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer">+ 새 브랜치</button>'
+      +'</div>'
+      + brs.map(function(b){
+          var bPRs = cs.prs.filter(function(p){return p.repoId===repo.id&&p.src===b.name&&p.status==='open';}).length;
+          return '<div style="background:#161b22;border:1px solid #30363d;border-radius:8px;margin-bottom:8px;padding:12px 14px;display:flex;align-items:center;gap:12px">'
+            +'<div style="font-size:20px">'+(b.isDefault?'🌲':'🌿')+'</div>'
+            +'<div style="flex:1">'
+            +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">'
+            +'<span style="font-size:12px;font-weight:600;font-family:monospace;color:#e6edf3">'+E(b.name)+'</span>'
+            +(b.isDefault?badge('default','#58a6ff','rgba(88,166,255,.15)','rgba(88,166,255,.3)'):'')
+            +(bPRs?badge('PR '+bPRs,'#3fb950','rgba(63,185,80,.15)','rgba(63,185,80,.3)'):'')
+            +'</div>'
+            +'<div style="font-size:10px;color:#8b949e">'+avatar(b.author,14)+' '+E(b.author)+' · 커밋 '+b.commits+'개 · '+E(b.lastCommit)+' · '+ago(b.updatedAt)+'</div>'
+            +'</div>'
+            +'<div style="display:flex;gap:6px">'
+            +'<button data-prb="'+E(b.name)+'" style="padding:4px 10px;font-size:10px;background:#21262d;color:#e6edf3;border:1px solid #30363d;border-radius:5px;cursor:pointer">PR 생성</button>'
+            +(b.isDefault?'':'<button data-delb="'+b.id+'" style="padding:4px 10px;font-size:10px;background:#21262d;color:#f85149;border:1px solid rgba(248,81,73,.3);border-radius:5px;cursor:pointer">삭제</button>')
+            +'</div></div>';
+        }).join('')
+    );
+    on('br-new', function(){ newBranch(repo); });
+    el.querySelectorAll('[data-prb]').forEach(function(b){ b.addEventListener('click', function(){ openPRModal(repo, this.dataset.prb); }); });
+    el.querySelectorAll('[data-delb]').forEach(function(b){
+      b.addEventListener('click', function(){
+        if(!confirm('브랜치를 삭제할까요?')) return;
+        var id=this.dataset.delb; cs.branches=cs.branches.filter(function(x){return x.id!==id;}); save(); renderContent();
+      });
+    });
+  }
+
+  /* ══════════════════════════════════════
+     PR 목록 탭
+  ══════════════════════════════════════ */
+  function renderPRList(el, repo) {
+    var all  = cs.prs.filter(function(p){return p.repoId===repo.id;});
+    var open = all.filter(function(p){return p.status==='open';});
+    var done = all.filter(function(p){return p.status!=='open';});
+    el.innerHTML = wrap(
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">'
+      +'<h2 style="font-size:15px;font-weight:700;color:#e6edf3">🔀 Pull Requests</h2>'
+      +'<button id="pr-new" style="padding:6px 14px;background:linear-gradient(135deg,#1f6feb,#8a2be2);color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer">+ PR 생성</button>'
+      +'</div>'
+      +'<div style="display:flex;border-bottom:1px solid #30363d;margin-bottom:16px">'
+      +'<span style="padding:7px 16px;font-size:11px;color:#3fb950;border-bottom:2px solid #3fb950">열린 PR ('+open.length+')</span>'
+      +'<span style="padding:7px 16px;font-size:11px;color:#8b949e">닫힌 PR ('+done.length+')</span>'
+      +'</div>'
+      + (open.length ? open.map(function(pr){return prCard(pr,repo);}).join('') : '<div style="padding:40px;text-align:center;color:#8b949e;font-size:12px">열린 PR이 없습니다</div>')
+    );
+    on('pr-new', function(){ openPRModal(repo, null); });
+    el.querySelectorAll('[data-oppr]').forEach(function(c){
+      c.addEventListener('click', function(e){
+        if(e.target.closest('button[data-mrg],[data-clpr]')) return;
+        activePrId=this.dataset.oppr; renderContent();
+      });
+    });
+    el.querySelectorAll('[data-mrg]').forEach(function(b){ b.addEventListener('click',function(e){e.stopPropagation();mergePR(this.dataset.mrg,repo);}); });
+    el.querySelectorAll('[data-clpr]').forEach(function(b){ b.addEventListener('click',function(e){e.stopPropagation();closePR(this.dataset.clpr,repo);}); });
+  }
+
+  function prCard(pr, repo) {
+    var app=( pr.approvals||[]).length, req=repo.mergeRules.minApprovals||1;
+    var canM=app>=req && pr.status==='open';
+    var hasAI=pr.aiReviews&&pr.aiReviews.length>0;
+    var lastAI=hasAI?pr.aiReviews[pr.aiReviews.length-1]:null;
+    var stBadge = pr.status==='open'  ? badge('● Open','#3fb950','rgba(63,185,80,.15)','rgba(63,185,80,.3)')
+                : pr.status==='merged'? badge('✓ Merged','#bc8cff','rgba(188,140,255,.15)','rgba(188,140,255,.3)')
+                :                        badge('✕ Closed','#f85149','rgba(248,81,73,.12)','rgba(248,81,73,.3)');
+    return '<div style="background:#161b22;border:1px solid #30363d;border-radius:8px;margin-bottom:8px;padding:14px;cursor:pointer" data-oppr="'+pr.id+'">'
+      +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">'
+      +'<div style="flex:1">'
+      +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">'+stBadge+'<span style="font-size:13px;font-weight:600;color:#e6edf3">'+E(pr.title)+'</span></div>'
+      +'<div style="font-size:10px;color:#8b949e;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">'
+      +avatar(pr.author,15)+' <span>'+E(pr.author)+'</span>'
+      +' · <code style="background:#21262d;padding:1px 5px;border-radius:4px">'+E(pr.src)+'</code>'
+      +' → <code style="background:#21262d;padding:1px 5px;border-radius:4px">'+E(pr.tgt)+'</code>'
+      +' · '+ago(pr.createdAt)+'</div>'
+      +'<div style="display:flex;align-items:center;gap:10px;font-size:10px">'
+      +'<span style="'+(canM?'color:#3fb950':'color:#d29922')+'">✓ 승인 '+app+'/'+req+'</span>'
+      +'<span style="color:#8b949e">💬 '+(pr.comments||[]).length+'</span>'
+      +(hasAI?'<span style="color:#bc8cff">🤖 AI '+lastAI.score+'/100</span>':'<span style="color:#8b949e">🤖 AI 미분석</span>')
+      +'</div></div>'
+      +(pr.status==='open'?'<div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">'
+        +(canM?'<button data-mrg="'+pr.id+'" style="padding:5px 14px;background:#3fb950;color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer">Merge PR</button>':'')
+        +'<button data-clpr="'+pr.id+'" style="padding:5px 14px;background:#21262d;color:#8b949e;border:1px solid #30363d;border-radius:6px;font-size:11px;cursor:pointer">닫기</button>'
+        +'</div>':'')
+      +'</div></div>';
+  }
+
+  /* ══════════════════════════════════════
+     PR 상세
+  ══════════════════════════════════════ */
+  function renderPRDetail(el, repo) {
+    var pr = getPR();
+    if (!pr) { activePrId=null; renderContent(); return; }
+    var app=( pr.approvals||[]).length, req=repo.mergeRules.minApprovals||1;
+    var canM= app>=req && pr.status==='open';
+    var iAmRev= (pr.reviewers||[]).indexOf(ME)!==-1;
+    var iApp  = (pr.approvals||[]).indexOf(ME)!==-1;
+    var stBadge = pr.status==='open'  ? badge('● Open','#3fb950','rgba(63,185,80,.15)','rgba(63,185,80,.3)')
+                : pr.status==='merged'? badge('✓ Merged','#bc8cff','rgba(188,140,255,.15)','rgba(188,140,255,.3)')
+                :                        badge('✕ Closed','#f85149','rgba(248,81,73,.12)','rgba(248,81,73,.3)');
+    var hasAI = pr.aiReviews&&pr.aiReviews.length>0;
+
+    el.innerHTML = wrap(
+      /* 헤더 */
+      '<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;gap:12px">'
+      +'<div style="flex:1"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'+stBadge
+      +'<span style="font-size:16px;font-weight:700;color:#e6edf3">'+E(pr.title)+'</span></div>'
+      +'<div style="font-size:11px;color:#8b949e">'+avatar(pr.author,18)+' <strong style="color:#e6edf3">'+E(pr.author)+'</strong>'
+      +' · '+ago(pr.createdAt)+' · '
+      +'<code style="background:#21262d;padding:2px 7px;border-radius:4px">'+E(pr.src)+'</code>'
+      +' → <code style="background:#21262d;padding:2px 7px;border-radius:4px">'+E(pr.tgt)+'</code></div></div>'
+      +'<div style="display:flex;gap:8px;flex-shrink:0">'
+      +(iAmRev&&!iApp&&pr.status==='open'?'<button id="pd-approve" style="padding:6px 16px;background:rgba(63,185,80,.15);color:#3fb950;border:1px solid rgba(63,185,80,.4);border-radius:6px;font-size:11px;font-weight:600;cursor:pointer">✓ 승인</button>':'')
+      +(iApp?'<span style="padding:6px 16px;background:rgba(63,185,80,.15);color:#3fb950;border:1px solid rgba(63,185,80,.4);border-radius:6px;font-size:11px;font-weight:600">✓ 승인됨</span>':'')
+      +(canM?'<button id="pd-merge" style="padding:6px 16px;background:#3fb950;color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer">🎉 Merge PR</button>':'')
+      +(pr.status==='open'?'<button id="pd-close" style="padding:6px 14px;background:#21262d;color:#8b949e;border:1px solid #30363d;border-radius:6px;font-size:11px;cursor:pointer">닫기</button>':'')
+      +'</div></div>'
+      /* 서브탭 */
+      +'<div id="pd-tabs" style="display:flex;border-bottom:1px solid #30363d;margin-bottom:16px">'
+      +pdTab('diff','📄 Diff',true)
+      +pdTab('desc','📝 설명',false)
+      +pdTab('review','💬 리뷰 ('+(pr.comments||[]).length+')',false)
+      +pdTab('aireview','🤖 AI 리뷰'+(hasAI?' ✓':''),false)
+      +pdTab('log','📊 활동 ('+(pr.activity||[]).length+')',false)
+      +'</div>'
+      +'<div id="pd-body"></div>'
+    );
+
+    pdTabContent(pr, 'diff');
+
+    el.querySelectorAll('.pd-tab').forEach(function(t){
+      t.addEventListener('click', function(){
+        el.querySelectorAll('.pd-tab').forEach(function(x){ x.style.color='#8b949e'; x.style.borderBottomColor='transparent'; });
+        this.style.color='#58a6ff'; this.style.borderBottomColor='#58a6ff';
+        pdTabContent(pr, this.dataset.ptab);
+      });
+    });
+    on('pd-approve', function(){
+      if(!pr.approvals) pr.approvals=[];
+      pr.approvals.push(ME);
+      pr.activity.push({type:'approved',author:ME,desc:'승인',time:Date.now()});
+      addLog(repo.id,'pr_approved',ME,'PR 승인: '+pr.title);
+      save(); renderPRDetail(el, repo);
+    });
+    on('pd-merge', function(){ if(confirm('PR을 머지할까요?')){ mergePR(pr.id,repo); renderPRDetail(el,repo); } });
+    on('pd-close', function(){ closePR(pr.id,repo); renderPRDetail(el,repo); });
+  }
+
+  function pdTab(key, label, active) {
+    return '<div class="pd-tab" data-ptab="'+key+'" style="padding:8px 16px;font-size:11px;cursor:pointer;'
+      +'color:'+(active?'#58a6ff':'#8b949e')+';border-bottom:2px solid '+(active?'#58a6ff':'transparent')+'">'+label+'</div>';
+  }
+
+  /* ── PR 서브탭 컨텐츠 ── */
+  function pdTabContent(pr, tab) {
+    var body = q('pd-body');
+    if (!body) return;
+    if      (tab==='diff')     body.innerHTML = renderDiffTab(pr);
+    else if (tab==='desc')     body.innerHTML = renderDescTab(pr);
+    else if (tab==='review')   { body.innerHTML = renderReviewTab(pr); bindReviewTab(pr); }
+    else if (tab==='aireview') { body.innerHTML = renderAITab(pr);     bindAITab(pr); }
+    else if (tab==='log')      body.innerHTML = renderLogTab(pr);
+
+    if (tab==='diff') bindDiffTab(pr);
+  }
+
+  /* ─── Diff 탭 ─── */
+  function renderDiffTab(pr) {
+    var diff = computeDiff(pr.before||'', pr.after||'');
+    var adds = diff.filter(function(l){return l.t==='add';}).length;
+    var dels = diff.filter(function(l){return l.t==='del';}).length;
+    var pct  = adds/(adds+dels||1)*100;
+
+    return '<div>'
+      /* 통계 바 */
+      +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">'
+      +'<span style="font-size:11px;background:#21262d;padding:3px 10px;border-radius:5px;font-family:monospace">📄 review.py</span>'
+      +'<span style="font-size:11px;color:#3fb950">+'+adds+'</span>'
+      +'<span style="font-size:11px;color:#f85149">-'+dels+'</span>'
+      +'<div style="flex:1;height:6px;border-radius:3px;background:#30363d;overflow:hidden">'
+      +'<div style="height:100%;width:'+pct.toFixed(0)+'%;background:#3fb950"></div></div></div>'
+      /* Unified Diff */
+      +'<div style="border:1px solid #30363d;border-radius:8px;overflow:hidden;margin-bottom:16px">'
+      +'<div style="background:#21262d;padding:7px 14px;border-bottom:1px solid #30363d;font-size:10px;font-weight:600;color:#8b949e">Unified Diff · 라인 클릭 → 코멘트 추가</div>'
+      +'<div style="background:#0d1117;overflow-x:auto">'
+      + diff.map(function(l,i){
+          var sym=l.t==='add'?'+':l.t==='del'?'-':' ';
+          var bg =l.t==='add'?'rgba(63,185,80,.1)':l.t==='del'?'rgba(248,81,73,.1)':'transparent';
+          var clr=l.t==='add'?'#7ee787':l.t==='del'?'#ff7b72':'#8b949e';
+          var coms=(pr.comments||[]).filter(function(c){return c.lineNum===i;});
+          return '<div data-dline="'+i+'" style="background:'+bg+';cursor:pointer">'
+            +'<div style="display:flex;font-family:monospace;font-size:11px;line-height:1.65;padding:1px 0">'
+            +'<span style="min-width:36px;color:#8b949e;font-size:10px;padding:0 8px;text-align:right;user-select:none;opacity:.5;flex-shrink:0">'+i+'</span>'
+            +'<span style="min-width:14px;color:'+clr+';flex-shrink:0">'+sym+'</span>'
+            +'<span style="color:'+clr+';flex:1">'+E(l.text)+'</span></div>'
+            + coms.map(function(c){ return inlineComment(c,pr); }).join('')
+            +'<div id="cf-'+i+'" style="display:none;background:#161b22;border-top:1px solid #30363d;padding:10px">'
+            +'<textarea data-cfta="'+i+'" style="width:100%;background:#21262d;border:1px solid #30363d;border-radius:5px;padding:6px 8px;font-size:11px;color:#e6edf3;outline:none;resize:vertical;min-height:50px" placeholder="라인 코멘트..."></textarea>'
+            +'<div style="display:flex;gap:6px;margin-top:6px;justify-content:flex-end">'
+            +'<button data-cfcancel="'+i+'" style="padding:4px 10px;background:#21262d;color:#8b949e;border:1px solid #30363d;border-radius:5px;font-size:10px;cursor:pointer">취소</button>'
+            +'<button data-cfsubmit="'+i+'" style="padding:4px 10px;background:#1f6feb;color:#fff;border:none;border-radius:5px;font-size:10px;cursor:pointer">등록</button>'
+            +'</div></div></div>';
+        }).join('')
+      +'</div></div>'
+      /* Side-by-side */
+      +'<div style="font-size:10px;font-weight:600;color:#8b949e;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Side-by-Side 비교</div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;border:1px solid #30363d;border-radius:8px;overflow:hidden">'
+      +'<div><div style="padding:6px 10px;background:#21262d;border-bottom:1px solid #30363d;font-size:10px;font-weight:600;color:#f85149">− Before</div>'
+      +'<div style="background:#0d1117;padding:8px 0">'
+      +(pr.before||'').split('\n').map(function(l,i){return '<div style="display:flex;font-family:monospace;font-size:11px;line-height:1.65;background:rgba(248,81,73,.07)"><span style="min-width:28px;color:#8b949e;font-size:10px;padding:0 8px;opacity:.5">'+(i+1)+'</span><span style="color:#ff7b72;white-space:pre">'+E(l)+'</span></div>';}).join('')
+      +'</div></div>'
+      +'<div><div style="padding:6px 10px;background:#21262d;border-bottom:1px solid #30363d;border-left:1px solid #30363d;font-size:10px;font-weight:600;color:#3fb950">+ After</div>'
+      +'<div style="background:#0d1117;padding:8px 0;border-left:1px solid #30363d">'
+      +(pr.after||'').split('\n').map(function(l,i){return '<div style="display:flex;font-family:monospace;font-size:11px;line-height:1.65;background:rgba(63,185,80,.07)"><span style="min-width:28px;color:#8b949e;font-size:10px;padding:0 8px;opacity:.5">'+(i+1)+'</span><span style="color:#7ee787;white-space:pre">'+E(l)+'</span></div>';}).join('')
+      +'</div></div></div></div>';
+  }
+
+  function inlineComment(c, pr) {
+    return '<div style="background:#161b22;border-left:3px solid #58a6ff;margin:2px 0 2px 50px;padding:8px 12px">'
+      +'<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">'
+      +avatar(c.author,16)+' <strong style="font-size:10.5px;color:#e6edf3">'+E(c.author)+'</strong>'
+      +' <span style="font-size:9px;color:#8b949e">'+ago(c.createdAt)+'</span></div>'
+      +'<div style="font-size:11px;color:#e6edf3;line-height:1.5">'+E(c.content)+'</div>'
+      +'<div style="margin-top:6px;display:flex;gap:4px">'
+      +['👍','👎','🎉','❓'].map(function(em){
+          var cnt=(c.reactions[em]||[]).length;
+          var act=(c.reactions[em]||[]).indexOf(ME)!==-1;
+          return '<button data-react="'+em+'" data-cid="'+c.id+'" style="font-size:11px;padding:2px 6px;background:'+(act?'rgba(88,166,255,.15)':'#21262d')+';border:1px solid '+(act?'#58a6ff':'#30363d')+';border-radius:4px;cursor:pointer">'+em+(cnt?' '+cnt:'')+'</button>';
+        }).join('')
+      +'</div></div>';
+  }
+
+  function bindDiffTab(pr) {
+    var body = q('pd-body');
+    if (!body) return;
+    body.querySelectorAll('[data-dline]').forEach(function(line){
+      line.addEventListener('click', function(e){
+        if(e.target.closest('[data-react],[data-cfsubmit],[data-cfcancel]')) return;
+        var cf=document.getElementById('cf-'+this.dataset.dline);
+        if(cf) cf.style.display=cf.style.display==='none'?'block':'none';
+      });
+    });
+    body.querySelectorAll('[data-cfsubmit]').forEach(function(b){
+      b.addEventListener('click', function(){
+        var ln=parseInt(this.dataset.cfsubmit), ta=body.querySelector('[data-cfta="'+ln+'"]'), txt=ta&&ta.value.trim();
+        if(!txt) return;
+        if(!pr.comments) pr.comments=[];
+        pr.comments.push({id:gid(),lineNum:ln,content:txt,author:ME,reactions:{'👍':[],'👎':[],'🎉':[],'❓':[]},createdAt:Date.now()});
+        pr.activity.push({type:'commented',author:ME,desc:txt.slice(0,30),time:Date.now()});
+        save(); pdTabContent(pr,'diff');
+      });
+    });
+    body.querySelectorAll('[data-cfcancel]').forEach(function(b){
+      b.addEventListener('click', function(){ var cf=document.getElementById('cf-'+this.dataset.cfcancel); if(cf)cf.style.display='none'; });
+    });
+    body.querySelectorAll('[data-react]').forEach(function(b){
+      b.addEventListener('click', function(e){
+        e.stopPropagation();
+        var c=(pr.comments||[]).find(function(x){return x.id===this.dataset.cid;}.bind(this));
+        if(!c) return;
+        var em=this.dataset.react;
+        if(!c.reactions[em]) c.reactions[em]=[];
+        var idx=c.reactions[em].indexOf(ME);
+        if(idx!==-1) c.reactions[em].splice(idx,1); else c.reactions[em].push(ME);
+        save(); pdTabContent(pr,'diff');
+      });
+    });
+  }
+
+  /* ─── 설명 탭 ─── */
+  function renderDescTab(pr) {
+    return '<div style="background:#161b22;border:1px solid #30363d;border-radius:8px;padding:16px">'
+      +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">'+avatar(pr.author,20)
+      +' <strong style="font-size:12px;color:#e6edf3">'+E(pr.author)+'</strong>'
+      +' <span style="font-size:10px;color:#8b949e">'+ago(pr.createdAt)+'</span></div>'
+      +'<div style="font-size:12px;color:#e6edf3;line-height:1.8;white-space:pre-wrap">'+E(pr.desc||'설명 없음')+'</div></div>';
+  }
+
+  /* ─── 리뷰 탭 ─── */
+  function renderReviewTab(pr) {
+    var repo = getRepo(), app=(pr.approvals||[]).length, req=(repo&&repo.mergeRules.minApprovals)||1;
+    return '<div>'
+      +'<div style="background:#161b22;border:1px solid #30363d;border-radius:8px;padding:14px;margin-bottom:12px">'
+      +'<div style="font-size:12px;font-weight:600;color:#e6edf3;margin-bottom:10px">승인 현황 ('+app+'/'+req+')</div>'
+      +(pr.reviewers||[]).map(function(r){
+          var ok=(pr.approvals||[]).indexOf(r)!==-1;
+          return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(48,54,61,.4)">'
+            +avatar(r,20)+' <span style="font-size:11px;flex:1;color:#e6edf3">'+E(r)+'</span>'
+            +'<span style="font-size:10px;'+(ok?'color:#3fb950':'color:#d29922')+'">'+(ok?'✓ 승인':'⏳ 대기')+'</span></div>';
+        }).join('')+'</div>'
+      +(pr.comments||[]).map(function(c){
+          return '<div style="background:#161b22;border:1px solid #30363d;border-left:3px solid #58a6ff;border-radius:6px;padding:10px 12px;margin-bottom:8px">'
+            +'<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">'+avatar(c.author,18)
+            +' <strong style="font-size:11px;color:#e6edf3">'+E(c.author)+'</strong>'
+            +(c.lineNum>=0?' <span style="font-size:9px;color:#8b949e;background:#21262d;padding:1px 6px;border-radius:4px">Line '+c.lineNum+'</span>':'')
+            +' <span style="font-size:9px;color:#8b949e">'+ago(c.createdAt)+'</span>'
+            +'</div><div style="font-size:11px;color:#e6edf3;line-height:1.5">'+E(c.content)+'</div></div>';
+        }).join('')
+      +'<div style="background:#161b22;border:1px solid #30363d;border-radius:8px;padding:12px;margin-top:12px">'
+      +'<textarea id="rv-ta" style="width:100%;background:#21262d;border:1px solid #30363d;border-radius:6px;padding:7px 10px;font-size:11px;color:#e6edf3;outline:none;resize:vertical;min-height:70px" placeholder="전체 리뷰 코멘트..."></textarea>'
+      +'<div style="display:flex;justify-content:flex-end;margin-top:6px">'
+      +'<button id="rv-submit" style="padding:6px 16px;background:#1f6feb;color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer">코멘트 등록</button>'
+      +'</div></div></div>';
+  }
+  function bindReviewTab(pr) {
+    on('rv-submit', function(){
+      var ta=q('rv-ta'), txt=ta&&ta.value.trim(); if(!txt) return;
+      if(!pr.comments) pr.comments=[];
+      pr.comments.push({id:gid(),lineNum:-1,content:txt,author:ME,reactions:{'👍':[],'👎':[],'🎉':[],'❓':[]},createdAt:Date.now()});
+      pr.activity.push({type:'commented',author:ME,desc:txt.slice(0,30),time:Date.now()});
+      save(); pdTabContent(pr,'review');
+    });
+  }
+
+  /* ─── 활동 탭 ─── */
+  function renderLogTab(pr) {
+    return '<div style="background:#161b22;border:1px solid #30363d;border-radius:8px;padding:10px 14px">'
+      +(pr.activity||[]).slice().reverse().map(logRow).join('')+'</div>';
+  }
+
+  /* ══════════════════════════════════════
+     🤖 AI 리뷰 탭 (PR 상세)
+  ══════════════════════════════════════ */
+  function renderAITab(pr) {
+    var hasAI = pr.aiReviews && pr.aiReviews.length > 0;
+    var lastAI = hasAI ? pr.aiReviews[pr.aiReviews.length-1] : null;
+
+    return '<div>'
+      /* 액션 바 */
+      +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">'
+      +'<div><div style="font-size:13px;font-weight:700;color:#e6edf3;margin-bottom:3px">🤖 AI 코드 리뷰</div>'
+      +'<div style="font-size:11px;color:#8b949e">AI가 코드를 분석하고 사람이 최종 검토합니다</div></div>'
+      +'<button id="ai-run-btn" style="padding:8px 18px;background:linear-gradient(135deg,#8a2be2,#1f6feb);color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px;flex-shrink:0">'
+      +'🤖 '+(hasAI?'AI 재분석':'AI 분석 시작')+'</button>'
+      +'</div>'
+      /* 결과 */
+      +'<div id="ai-result">'+(hasAI ? aiResultHTML(lastAI, pr) : aiEmptyHTML())+'</div>'
+      +'</div>';
+  }
+
+  function aiEmptyHTML() {
+    return '<div style="background:#161b22;border:2px dashed #30363d;border-radius:10px;padding:50px;text-align:center;color:#8b949e">'
+      +'<div style="font-size:42px;margin-bottom:12px;opacity:.35">🤖</div>'
+      +'<div style="font-size:13px;font-weight:600;color:#e6edf3;margin-bottom:8px">AI 분석을 시작하세요</div>'
+      +'<div style="font-size:11px;line-height:1.8">버그 · 성능 · 스타일 · 보안을 자동으로 분석합니다<br>분석 후 팀원이 검토하여 최종 승인합니다</div>'
+      +'</div>';
+  }
+
+  function aiResultHTML(ai, pr) {
+    var sc  = ai.score;
+    var scC = sc>=80?'#3fb950':sc>=60?'#d29922':'#f85149';
+    var gr  = sc>=90?'A':sc>=80?'B':sc>=70?'C':sc>=60?'D':'F';
+    var cats= [{k:'bugScore',l:'버그'},{k:'perfScore',l:'성능'},{k:'styleScore',l:'스타일'},{k:'secScore',l:'보안'},{k:'testScore',l:'테스트'}];
+
+    /* 수락/무시/논의 통계 */
+    var items  = ai.items||[];
+    var nAccept= items.filter(function(i){return i.hd==='accept';}).length;
+    var nReject= items.filter(function(i){return i.hd==='reject';}).length;
+    var nDiscus= items.filter(function(i){return i.hd==='discuss';}).length;
+    var nPend  = items.length - nAccept - nReject - nDiscus;
+
+    return '<div>'
+      /* 점수 카드 */
+      +'<div style="background:#161b22;border:1px solid #30363d;border-radius:10px;padding:16px;margin-bottom:14px">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:12px">'
+      +'<div style="display:flex;align-items:center;gap:14px">'
+      +'<div style="width:56px;height:56px;border-radius:12px;background:'+scC+'22;border:2px solid '+scC+';display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:'+scC+'">'+gr+'</div>'
+      +'<div><div style="font-size:28px;font-weight:800;color:'+scC+'">'+sc+'<span style="font-size:14px;color:#8b949e"> / 100</span></div>'
+      +'<div style="font-size:10px;color:#8b949e;margin-top:2px">'+new Date(ai.createdAt).toLocaleString('ko-KR')+' · '+E(ai.model||'AI')+'</div></div></div>'
+      +'<div style="display:flex;gap:6px;flex-wrap:wrap">'
+      +cats.map(function(c){
+          var v=ai[c.k]||0, cv=v>=80?'#3fb950':v>=60?'#d29922':'#f85149';
+          return '<div style="font-size:10px;padding:3px 9px;border-radius:6px;background:'+cv+'18;color:'+cv+';border:1px solid '+cv+'33">'+c.l+' '+v+'</div>';
+        }).join('')
+      +'</div></div>'
+      +'<div style="background:#0d1117;border-radius:6px;padding:10px 12px;border-left:3px solid #bc8cff;font-size:11px;color:#e6edf3;line-height:1.6;margin-bottom:10px">'+E(ai.summary)+'</div>'
+      /* 사람 검토 통계 */
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
+      +'<span style="font-size:10px;color:#8b949e">사람 검토:</span>'
+      +'<span style="font-size:10px;color:#3fb950">✓ 수락 '+nAccept+'</span>'
+      +'<span style="font-size:10px;color:#f85149">✕ 무시 '+nReject+'</span>'
+      +'<span style="font-size:10px;color:#d29922">💬 논의 '+nDiscus+'</span>'
+      +'<span style="font-size:10px;color:#8b949e">⏳ 대기 '+nPend+'</span>'
+      +'</div></div>'
+
+      /* AI 피드백 목록 */
+      +'<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">'
+      + items.map(function(item){
+          var sevC={error:'#f85149',warning:'#d29922',info:'#58a6ff',suggestion:'#bc8cff'}[item.severity]||'#58a6ff';
+          var sevL={error:'🔴 오류',warning:'🟡 경고',info:'🔵 정보',suggestion:'🟣 제안'}[item.severity]||'🔵';
+          var catI={bug:'🐛',performance:'⚡',style:'🎨',security:'🛡️',test:'🧪'}[item.category]||'📝';
+          var hdC ={accept:'#3fb950',reject:'#f85149',discuss:'#d29922'}[item.hd]||'#444c56';
+          var hdL ={accept:'✓ 수락됨',reject:'✕ 무시됨',discuss:'💬 논의 중'}[item.hd]||'';
+          return '<div style="background:#161b22;border:1px solid #30363d;border-left:3px solid '+sevC+';border-radius:8px;overflow:hidden">'
+            +'<div style="padding:10px 14px;background:'+sevC+'0d;display:flex;align-items:center;justify-content:space-between;gap:8px">'
+            +'<div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">'
+            +'<span>'+catI+'</span><span style="font-size:11px;font-weight:600;color:#e6edf3">'+E(item.title)+'</span>'
+            +'<span style="font-size:9px;padding:1px 7px;border-radius:8px;background:'+sevC+'22;color:'+sevC+';border:1px solid '+sevC+'44">'+sevL+'</span>'
+            +'</div>'
+            +(item.line?'<span style="font-size:9px;color:#8b949e;font-family:monospace;flex-shrink:0">Line '+item.line+'</span>':'')
+            +(item.hd?'<span style="font-size:10px;color:'+hdC+';font-weight:600;flex-shrink:0">'+hdL+'</span>':'')
+            +'</div>'
+            +'<div style="padding:10px 14px">'
+            +'<div style="font-size:11px;color:#8b949e;line-height:1.6;margin-bottom:6px">'+E(item.description)+'</div>'
+            +(item.suggestion?'<div style="background:#0d1117;border-radius:5px;padding:8px 10px;font-family:monospace;font-size:10.5px;color:#a5d6ff;white-space:pre;overflow-x:auto;margin-bottom:8px">'+E(item.suggestion)+'</div>':'')
+            +'<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">'
+            +'<span style="font-size:10px;color:#8b949e">👤 검토:</span>'
+            +'<button data-hd-accept="'+item.id+'" style="padding:3px 10px;font-size:10px;background:'+(item.hd==='accept'?'rgba(63,185,80,.2)':'#21262d')+';color:'+(item.hd==='accept'?'#3fb950':'#8b949e')+';border:1px solid '+(item.hd==='accept'?'rgba(63,185,80,.4)':'#30363d')+';border-radius:5px;cursor:pointer">✓ 수락</button>'
+            +'<button data-hd-reject="'+item.id+'" style="padding:3px 10px;font-size:10px;background:'+(item.hd==='reject'?'rgba(248,81,73,.15)':'#21262d')+';color:'+(item.hd==='reject'?'#f85149':'#8b949e')+';border:1px solid '+(item.hd==='reject'?'rgba(248,81,73,.3)':'#30363d')+';border-radius:5px;cursor:pointer">✕ 무시</button>'
+            +'<button data-hd-discuss="'+item.id+'" style="padding:3px 10px;font-size:10px;background:'+(item.hd==='discuss'?'rgba(210,153,34,.15)':'#21262d')+';color:'+(item.hd==='discuss'?'#d29922':'#8b949e')+';border:1px solid '+(item.hd==='discuss'?'rgba(210,153,34,.3)':'#30363d')+';border-radius:5px;cursor:pointer">💬 논의</button>'
+            +'</div></div></div>';
+        }).join('')
+      +'</div>'
+
+      /* 사람 최종 검토 */
+      +'<div style="background:#161b22;border:1px solid #30363d;border-radius:10px;padding:16px">'
+      +'<div style="font-size:12px;font-weight:700;color:#e6edf3;margin-bottom:4px">👤 사람 최종 검토 · 결정</div>'
+      +'<div style="font-size:11px;color:#8b949e;margin-bottom:12px">AI 피드백을 검토한 후 최종 의견을 남겨주세요</div>'
+      +'<textarea id="human-note" style="width:100%;background:#21262d;border:1px solid #30363d;border-radius:6px;padding:8px 10px;font-size:11px;color:#e6edf3;outline:none;resize:vertical;min-height:70px;margin-bottom:10px" placeholder="설계 의도 / 도메인 맥락 / 팀 컨벤션 / 리스크 판단..."></textarea>'
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
+      +'<button id="hd-approve" style="padding:8px 18px;background:rgba(63,185,80,.15);color:#3fb950;border:1px solid rgba(63,185,80,.4);border-radius:6px;font-size:11px;font-weight:600;cursor:pointer">✓ 검토 완료 · 승인</button>'
+      +'<button id="hd-request" style="padding:8px 18px;background:rgba(210,153,34,.1);color:#d29922;border:1px solid rgba(210,153,34,.3);border-radius:6px;font-size:11px;cursor:pointer">🔄 수정 요청</button>'
+      +'<button id="hd-override" style="padding:8px 18px;background:rgba(248,81,73,.08);color:#f85149;border:1px solid rgba(248,81,73,.2);border-radius:6px;font-size:11px;cursor:pointer">⚡ AI 무시 · 강제 승인</button>'
+      +'</div></div></div>';
+  }
+
+  function bindAITab(pr) {
+    var repo = getRepo();
+    /* AI 실행 */
+    on('ai-run-btn', function(){ runAI(pr); });
+
+    /* 수락/무시/논의 */
+    ['accept','reject','discuss'].forEach(function(act){
+      var sel = '[data-hd-'+act+']';
+      (q('pd-body')||document).querySelectorAll(sel).forEach(function(b){
+        b.addEventListener('click', function(){
+          var lastAI=pr.aiReviews&&pr.aiReviews[pr.aiReviews.length-1];
+          if(!lastAI) return;
+          var item=(lastAI.items||[]).find(function(i){return i.id===this.dataset['hd'+act.charAt(0).toUpperCase()+act.slice(1)];}.bind(this));
+          if(item){ item.hd=act; save(); pdTabContent(pr,'aireview'); }
+        });
+      });
+    });
+
+    /* 승인 */
+    on('hd-approve', function(){
+      var note=(q('human-note')||{}).value||'';
+      if(!pr.approvals) pr.approvals=[];
+      if(pr.approvals.indexOf(ME)===-1) pr.approvals.push(ME);
+      pr.activity.push({type:'approved',author:ME,desc:'AI 리뷰 검토 후 승인'+(note?' — '+note.slice(0,30):''),time:Date.now()});
+      if(pr.aiReviews&&pr.aiReviews.length) pr.aiReviews[pr.aiReviews.length-1].humanApproved=true;
+      addLog(repo.id,'pr_approved',ME,'PR 승인: '+pr.title);
+      save(); pdTabContent(pr,'aireview');
+      /* 상세 헤더 갱신 */
+      renderPRDetail(q('cb-content'), repo);
+    });
+
+    /* 수정 요청 */
+    on('hd-request', function(){
+      var note=(q('human-note')||{}).value||'수정이 필요합니다.';
+      if(!pr.comments) pr.comments=[];
+      pr.comments.push({id:gid(),lineNum:-1,content:'[수정 요청] '+note,author:ME,reactions:{'👍':[],'👎':[],'🎉':[],'❓':[]},createdAt:Date.now()});
+      pr.activity.push({type:'change_requested',author:ME,desc:'수정 요청: '+note.slice(0,30),time:Date.now()});
+      save(); alert('수정 요청이 등록되었습니다.');
+    });
+
+    /* 강제 승인 */
+    on('hd-override', function(){
+      if(!confirm('AI 리뷰를 무시하고 강제 승인할까요?')) return;
+      var note=(q('human-note')||{}).value||'';
+      if(!pr.approvals) pr.approvals=[];
+      if(pr.approvals.indexOf(ME)===-1) pr.approvals.push(ME);
+      pr.activity.push({type:'approved',author:ME,desc:'⚡ AI 무시·강제 승인'+(note?' — '+note.slice(0,30):''),time:Date.now()});
+      addLog(repo.id,'pr_approved',ME,'PR 강제 승인: '+pr.title);
+      save(); pdTabContent(pr,'aireview');
+      renderPRDetail(q('cb-content'), repo);
+    });
+  }
+
+  /* ══════════════════════════════════════
+     🤖 AI 허브 탭 (협업 메인 네비)
+  ══════════════════════════════════════ */
+  function renderAIHub(el, repo) {
+    var prs = cs.prs.filter(function(p){return p.repoId===repo.id;});
+    el.innerHTML = wrap(
+      /* 헤더 */
+      '<div style="margin-bottom:20px">'
+      +'<h2 style="font-size:16px;font-weight:700;color:#e6edf3;margin-bottom:4px">🤖 AI + 사람 하이브리드 리뷰</h2>'
+      +'<p style="font-size:11px;color:#8b949e">AI가 먼저 분석하고, 사람이 최종 판단하는 2-Step 리뷰 시스템</p>'
+      +'</div>'
+
+      /* 플로우 */
+      +'<div style="background:#161b22;border:1px solid #30363d;border-radius:10px;padding:20px;margin-bottom:20px">'
+      +'<div style="display:flex;align-items:stretch;justify-content:center;gap:0;flex-wrap:wrap">'
+      + flowStep('🤖','AI 제안','정적 분석·버그·성능<br>스타일·보안 자동 검사','#bc8cff','rgba(188,140,255,.12)')
+      + flowArrow()
+      + flowStep('👤','Dev 검토','설계 의도·도메인 맥락<br>팀 컨벤션·리스크 판단','#58a6ff','rgba(88,166,255,.12)')
+      + flowArrow()
+      + flowStep('✅','Approve','수락·무시·논의<br>최종 승인·멘토링','#3fb950','rgba(63,185,80,.12)')
+      + flowArrow()
+      + flowStep('🎉','병합','머지·활동 기록<br>브랜치 정리','#d29922','rgba(210,153,34,.12)')
+      +'</div></div>'
+
+      /* 역할 카드 */
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">'
+      + roleCard('🤖 AI 리뷰 담당','#bc8cff',['정적 분석 기반 일관 피드백','잠재 버그·성능 리스크 조기 탐지','스타일·린트 자동 점검','테스트·예외 처리 제안','24시간 즉각적 응답'])
+      + roleCard('👤 사람 리뷰 담당','#58a6ff',['설계 의도 확인·도메인 적합성 평가','팀 컨벤션 합의·맥락 판단','리스크·우선순위 결정','최종 승인·멘토링','비즈니스 로직 검증'])
+      +'</div>'
+
+      /* PR 현황 */
+      +'<div style="font-size:12px;font-weight:600;color:#e6edf3;margin-bottom:10px">📋 PR별 AI 리뷰 현황</div>'
+      +(prs.length ? prs.map(function(pr){return aiHubCard(pr,repo);}).join('')
+        : '<div style="background:#161b22;border:1px solid #30363d;border-radius:8px;padding:30px;text-align:center;color:#8b949e;font-size:12px">PR이 없습니다. 먼저 PR을 생성해주세요.</div>')
+    );
+
+    el.querySelectorAll('[data-hub-ai]').forEach(function(b){
+      b.addEventListener('click', function(){
+        var prId=this.dataset.hubAi;
+        var pr=cs.prs.find(function(p){return p.id===prId;});
+        if(pr) runAI(pr, function(){ /* 리프레시 */ renderAIHub(el,repo); });
+      });
+    });
+    el.querySelectorAll('[data-hub-pr]').forEach(function(b){
+      b.addEventListener('click', function(){
+        activePrId=this.dataset.hubPr; activeView='prs'; renderNavTabs(); renderContent();
+        setTimeout(function(){
+          var tab=document.querySelector('.pd-tab[data-ptab="aireview"]');
+          if(tab) tab.click();
+        },200);
+      });
+    });
+  }
+
+  function flowStep(icon, title, desc, color, bg) {
+    return '<div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding:16px 18px;background:'+bg+';border:1px solid '+color+'55;border-radius:10px;min-width:130px;flex:1">'
+      +'<div style="font-size:26px;margin-bottom:6px">'+icon+'</div>'
+      +'<div style="font-size:12px;font-weight:700;color:'+color+';margin-bottom:4px">'+title+'</div>'
+      +'<div style="font-size:10px;color:#8b949e;line-height:1.5">'+desc+'</div></div>';
+  }
+  function flowArrow() {
+    return '<div style="display:flex;align-items:center;padding:0 4px;color:#444c56;font-size:22px;flex-shrink:0">›</div>';
+  }
+  function roleCard(title, color, items) {
+    return '<div style="background:#161b22;border:1px solid #30363d;border-radius:8px;padding:14px">'
+      +'<div style="font-size:12px;font-weight:700;color:'+color+';margin-bottom:10px">'+title+'</div>'
+      +'<div style="display:flex;flex-direction:column;gap:6px">'
+      +items.map(function(item){ return '<div style="display:flex;align-items:flex-start;gap:7px;font-size:11px;color:#8b949e"><span style="color:'+color+';flex-shrink:0">✓</span><span>'+item+'</span></div>'; }).join('')
+      +'</div></div>';
+  }
+  function aiHubCard(pr, repo) {
+    var hasAI=pr.aiReviews&&pr.aiReviews.length>0, last=hasAI?pr.aiReviews[pr.aiReviews.length-1]:null;
+    var app=(pr.approvals||[]).length, req=repo.mergeRules.minApprovals||1;
+    var items=last?last.items||[]:[];
+    var nA=items.filter(function(i){return i.hd==='accept';}).length;
+    var nR=items.filter(function(i){return i.hd==='reject';}).length;
+
+    return '<div style="background:#161b22;border:1px solid #30363d;border-radius:8px;margin-bottom:8px;padding:12px 14px">'
+      +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">'
+      +'<div style="flex:1;min-width:0">'
+      +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">'
+      +(pr.status==='open'?badge('● Open','#3fb950','rgba(63,185,80,.15)','rgba(63,185,80,.3)'):pr.status==='merged'?badge('✓ Merged','#bc8cff','rgba(188,140,255,.15)','rgba(188,140,255,.3)'):badge('✕ Closed','#f85149','rgba(248,81,73,.12)','rgba(248,81,73,.3)'))
+      +'<span style="font-size:12px;font-weight:600;color:#e6edf3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+E(pr.title)+'</span>'
+      +'</div>'
+      +'<div style="display:flex;align-items:center;gap:12px;font-size:10px;flex-wrap:wrap">'
+      +(hasAI
+        ? '<span style="color:#3fb950">🤖 AI '+last.score+'/100</span>'
+          +'<span style="color:#3fb950">수락 '+nA+'</span>'
+          +'<span style="color:#f85149">무시 '+nR+'</span>'
+          +'<span style="'+(app>=req?'color:#3fb950':'color:#d29922')+'">👤 승인 '+app+'/'+req+'</span>'
+        : '<span style="color:#d29922">🤖 AI 미분석</span>')
+      +'</div>'
+      +(last?'<div style="margin-top:5px;font-size:10px;color:#8b949e;background:#0d1117;padding:5px 8px;border-radius:5px;border-left:3px solid #bc8cff">'+E(last.summary.slice(0,80))+'...</div>':'')
+      +'</div>'
+      +'<div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0">'
+      +(pr.status==='open'?'<button data-hub-ai="'+pr.id+'" style="padding:5px 12px;background:linear-gradient(135deg,#8a2be2,#1f6feb);color:#fff;border:none;border-radius:6px;font-size:10px;font-weight:600;cursor:pointer">🤖 '+(hasAI?'재분석':'AI 분석')+'</button>':'')
+      +'<button data-hub-pr="'+pr.id+'" style="padding:5px 12px;background:#21262d;color:#8b949e;border:1px solid #30363d;border-radius:6px;font-size:10px;cursor:pointer">PR 보기</button>'
+      +'</div></div></div>';
+  }
+
+  /* ══════════════════════════════════════
+     🤖 AI 분석 실행 (Groq API)
+  ══════════════════════════════════════ */
+  function runAI(pr, onDone) {
+    var key = sessionStorage.getItem('groq_key') || '';
+    if (!key) { alert('Groq API 키가 필요합니다.\n상단 API 키 입력창에 gsk_... 키를 입력하세요.'); return; }
+
+    /* 로딩 UI */
+    var resEl = q('ai-result');
+    if (resEl) resEl.innerHTML = '<div style="padding:50px;text-align:center;color:#8b949e">'
+      +'<div style="width:36px;height:36px;border:2.5px solid #30363d;border-top-color:#bc8cff;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px"></div>'
+      +'<div style="font-size:13px;font-weight:500;color:#e6edf3;margin-bottom:6px">AI 분석 중...</div>'
+      +'<div style="font-size:11px;color:#8b949e">코드 변경 사항을 분석하고 있습니다</div></div>';
+    var runBtn = q('ai-run-btn');
+    if (runBtn) { runBtn.disabled=true; runBtn.innerHTML='<div style="width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite"></div> 분석 중...'; }
+
+    var prompt = 'PR 코드 변경을 분석하고 JSON만 반환하세요. 마크다운 없음.\n\n'
+      +'PR 제목: '+pr.title+'\n'
+      +'변경 전:\n```\n'+(pr.before||'(없음)')+'\n```\n'
+      +'변경 후:\n```\n'+(pr.after||'(없음)')+'\n```\n\n'
+      +'{"score":0-100,"bugScore":0-100,"perfScore":0-100,"styleScore":0-100,"secScore":0-100,"testScore":0-100,'
+      +'"summary":"AI 종합 평가 한 문장","items":[{"id":"1","category":"bug|performance|style|security|test",'
+      +'"severity":"error|warning|info|suggestion","title":"제목","description":"설명",'
+      +'"line":줄번호또는null,"suggestion":"개선코드또는빈문자열"}]}\n'
+      +'items 2~6개, 실제 발견된 문제 위주, 한국어, JSON만 반환';
+
+    var models = ['llama-3.3-70b-versatile','llama-3.1-8b-instant','gemma2-9b-it'];
+    var mIdx = 0;
+
+    function tryNext() {
+      if (mIdx >= models.length) {
+        finish(null, '모든 모델 시도 실패. 잠시 후 다시 시도해주세요.');
+        return;
+      }
+      var model = models[mIdx++];
+      fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method:'POST',
+        headers:{'Authorization':'Bearer '+key,'Content-Type':'application/json'},
+        body:JSON.stringify({
+          model:model,
+          messages:[
+            {role:'system',content:'코드 리뷰 전문 AI. 순수 JSON만 반환. 마크다운 금지.'},
+            {role:'user',content:prompt}
+          ],
+          temperature:0.1, max_tokens:3000
+        })
+      })
+      .then(function(res){ if(res.status===429){setTimeout(tryNext,800);return null;} if(!res.ok) throw new Error('HTTP '+res.status); return res.json(); })
+      .then(function(data){
+        if(!data) return;
+        var raw=((data.choices||[])[0]||{}).message; raw=raw?(raw.content||'').trim():'';
+        var result=null;
+        [function(r){return JSON.parse(r);},
+         function(r){return JSON.parse(r.replace(/^```json?\s*/i,'').replace(/\s*```$/,''));},
+         function(r){var m=r.match(/\{[\s\S]*\}/);if(m)return JSON.parse(m[0]);throw 0;}
+        ].forEach(function(fn){if(!result)try{result=fn(raw);}catch(e){}});
+        if(!result){tryNext();return;}
+        (result.items||[]).forEach(function(item,i){if(!item.id)item.id=gid();});
+        var ai={id:gid(),model:model,
+          score:Math.min(100,Math.max(0,+result.score||0)),
+          bugScore:+result.bugScore||0,perfScore:+result.perfScore||0,
+          styleScore:+result.styleScore||0,secScore:+result.secScore||0,testScore:+result.testScore||0,
+          summary:result.summary||'분석 완료',items:result.items||[],
+          humanApproved:false,createdAt:Date.now()};
+        if(!pr.aiReviews) pr.aiReviews=[];
+        pr.aiReviews.push(ai);
+        pr.activity.push({type:'ai_reviewed',author:'AI',desc:'AI 분석 완료 · 점수: '+ai.score,time:Date.now()});
+        var repo=getRepo();
+        if(repo) addLog(repo.id,'ai_reviewed','AI','PR AI 분석: '+pr.title);
+        save();
+        finish(ai, null);
+        if(onDone) onDone();
+      })
+      .catch(function(){ tryNext(); });
+    }
+
+    function finish(ai, errMsg) {
+      var resEl=q('ai-result');
+      if(resEl) resEl.innerHTML = ai ? aiResultHTML(ai, pr) : '<div style="padding:20px;background:rgba(248,81,73,.08);border:1px solid rgba(248,81,73,.3);border-radius:8px;color:#f85149;font-size:11px">❌ '+E(errMsg||'AI 분석 실패')+'</div>';
+      var rb=q('ai-run-btn');
+      if(rb){rb.disabled=false;rb.innerHTML='🤖 AI 재분석';}
+      /* 이벤트 재바인딩 */
+      bindAITab(pr);
+    }
+
+    tryNext();
+  }
+
+  /* ══════════════════════════════════════
+     활동 로그 탭
+  ══════════════════════════════════════ */
+  function renderActivity(el, repo) {
+    var acts = cs.log.filter(function(a){return a.repoId===repo.id;}).slice().reverse();
+    el.innerHTML = wrap(
+      '<h2 style="font-size:15px;font-weight:700;color:#e6edf3;margin-bottom:16px">📊 활동 로그</h2>'
+      +'<div style="background:#161b22;border:1px solid #30363d;border-radius:8px;padding:8px 14px 12px">'
+      +(acts.length?acts.map(logRow).join(''):'<div style="padding:20px;text-align:center;color:#8b949e;font-size:11px">활동 없음</div>')
+      +'</div>'
+    );
+  }
+
+  /* ══════════════════════════════════════
+     Diff 알고리즘 (LCS)
+  ══════════════════════════════════════ */
+  function computeDiff(before, after) {
+    var bL=before.split('\n'), aL=after.split('\n'), M=bL.length, N=aL.length;
+    var dp=Array.from({length:M+1},function(){return new Array(N+1).fill(0);});
+    for(var i=1;i<=M;i++) for(var j=1;j<=N;j++) dp[i][j]=bL[i-1]===aL[j-1]?dp[i-1][j-1]+1:Math.max(dp[i-1][j],dp[i][j-1]);
+    var res=[],ii=M,jj=N;
+    while(ii>0||jj>0){
+      if(ii>0&&jj>0&&bL[ii-1]===aL[jj-1]){res.unshift({t:'ctx',text:bL[ii-1]});ii--;jj--;}
+      else if(jj>0&&(ii===0||dp[ii][jj-1]>=dp[ii-1][jj])){res.unshift({t:'add',text:aL[jj-1]});jj--;}
+      else{res.unshift({t:'del',text:bL[ii-1]});ii--;}
+    }
+    return res;
+  }
+
+  /* ══════════════════════════════════════
+     PR 유틸
+  ══════════════════════════════════════ */
+  function mergePR(prId, repo) {
+    var pr=cs.prs.find(function(p){return p.id===prId;});
+    if(!pr||!confirm('PR을 머지할까요?')) return;
+    pr.status='merged';
+    if(!pr.activity) pr.activity=[];
+    pr.activity.push({type:'merged',author:ME,desc:'머지 완료',time:Date.now()});
+    addLog(repo.id,'pr_merged',ME,'PR 머지: '+pr.title);
+    if(repo.mergeRules.deleteBranch) cs.branches=cs.branches.filter(function(b){return!(b.repoId===repo.id&&b.name===pr.src);});
+    save(); renderContent();
+  }
+  function closePR(prId, repo) {
+    var pr=cs.prs.find(function(p){return p.id===prId;});
+    if(!pr) return;
+    pr.status='closed';
+    if(!pr.activity) pr.activity=[];
+    pr.activity.push({type:'closed',author:ME,desc:'PR 닫힘',time:Date.now()});
+    addLog(repo.id,'pr_closed',ME,'PR 닫힘: '+pr.title);
+    save(); renderContent();
+  }
+  function newBranch(repo) {
+    var name=prompt('새 브랜치 이름:','feature/');
+    if(!name||!name.trim()) return;
+    cs.branches.push({id:gid(),repoId:repo.id,name:name.trim(),isDefault:false,author:ME,commits:0,lastCommit:'초기 커밋',updatedAt:Date.now()});
+    addLog(repo.id,'branch_created',ME,name.trim()+' 브랜치 생성');
+    save(); renderContent();
+  }
+
+  /* ══════════════════════════════════════
+     저장소 모달
+  ══════════════════════════════════════ */
+  function openRepoModal() {
+    ['cb-repo-name','cb-repo-desc','cb-repo-members'].forEach(function(id){var e=q(id);if(e)e.value='';});
+    q('cb-repo-modal').style.display='flex';
+    setTimeout(function(){var e=q('cb-repo-name');if(e)e.focus();},50);
+  }
+  function submitRepo() {
+    var name=(q('cb-repo-name')||{}).value||''; name=name.trim();
+    if(!name){alert('저장소 이름을 입력해주세요.');return;}
+    var mems=((q('cb-repo-members')||{}).value||'').split(',').map(function(m){return m.trim();}).filter(Boolean);
+    if(mems.indexOf(ME)===-1) mems.unshift(ME);
+    var repo={id:gid(),name:name,desc:((q('cb-repo-desc')||{}).value||name+' 프로젝트'),
+      owner:ME,members:mems,color:PROJ_COLORS[cs.repos.length%PROJ_COLORS.length],
+      emoji:PROJ_EMOJIS[cs.repos.length%PROJ_EMOJIS.length],
+      mergeRules:{requireApproval:true,minApprovals:1,requireCI:false,deleteBranch:true},
+      createdAt:Date.now()};
+    cs.repos.push(repo);
+    cs.branches.push({id:gid(),repoId:repo.id,name:'main',isDefault:true,author:ME,commits:0,lastCommit:'초기 커밋',updatedAt:Date.now()});
+    addLog(repo.id,'repo_created',ME,'저장소 생성: '+name);
+    save();
+    activeRepoId=repo.id;
+    q('cb-repo-modal').style.display='none';
+    renderAll();
+  }
+
+  /* ══════════════════════════════════════
+     PR 생성 모달
+  ══════════════════════════════════════ */
+  function openPRModal(repo, srcBranch) {
+    var brs=cs.branches.filter(function(b){return b.repoId===repo.id;});
+    var ss=q('cb-pr-src'), ts=q('cb-pr-tgt');
+    if(!ss||!ts) return;
+    ss.innerHTML=ts.innerHTML=brs.map(function(b){return '<option value="'+E(b.name)+'">'+E(b.name)+'</option>';}).join('');
+    if(srcBranch) ss.value=srcBranch;
+    var def=brs.find(function(b){return b.isDefault;}); if(def) ts.value=def.name;
+    var rv=q('cb-pr-reviewers');
+    if(rv) rv.innerHTML=repo.members.filter(function(m){return m!==ME;}).map(function(m){
+      return '<label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:11px;color:#e6edf3">'
+        +'<input type="checkbox" value="'+E(m)+'" style="accent-color:#58a6ff">'+avatar(m,18)+' '+E(m)+'</label>';
+    }).join('');
+    ['cb-pr-title','cb-pr-desc','cb-pr-before','cb-pr-after'].forEach(function(id){var e=q(id);if(e)e.value='';});
+    q('cb-pr-modal').style.display='flex';
+    setTimeout(function(){var e=q('cb-pr-title');if(e)e.focus();},50);
+
+    q('cb-pr-submit').onclick=function(){
+      var title=(q('cb-pr-title')||{}).value||''; title=title.trim();
+      if(!title){alert('PR 제목을 입력해주세요.');return;}
+      var reviewers=[]; rv.querySelectorAll('input:checked').forEach(function(cb){reviewers.push(cb.value);});
+      var pr={id:gid(),repoId:repo.id,title:title,desc:(q('cb-pr-desc')||{}).value||'',
+        src:ss.value,tgt:ts.value,author:ME,reviewers:reviewers,
+        status:'open',approvals:[],
+        before:(q('cb-pr-before')||{}).value||'',
+        after:(q('cb-pr-after')||{}).value||'',
+        comments:[],activity:[{type:'created',author:ME,desc:'PR 오픈',time:Date.now()}],
+        aiReviews:[],createdAt:Date.now()};
+      cs.prs.unshift(pr);
+      addLog(repo.id,'pr_opened',ME,'PR: '+title);
+      save();
+      q('cb-pr-modal').style.display='none';
+      activeView='prs'; activePrId=pr.id;
+      renderAll();
+    };
+  }
+
+  /* ══════════════════════════════════════
+     시작
+  ══════════════════════════════════════ */
+  if (document.readyState==='loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+})();
+</script>
+
+
+</body>
+</html>
