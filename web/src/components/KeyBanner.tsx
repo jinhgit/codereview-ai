@@ -4,13 +4,20 @@ import styles from './KeyBanner.module.css'
 
 type Props = {
   visible: boolean
+  serverKeyMode?: boolean
   onSaved: (key: string) => void
+  onDismiss?: () => void
 }
 
-export function KeyBanner({ visible, onSaved }: Props) {
+export function KeyBanner({
+  visible,
+  serverKeyMode,
+  onSaved,
+  onDismiss,
+}: Props) {
   const [value, setValue] = useState('')
 
-  if (!visible) return null
+  if (!visible || serverKeyMode) return null
 
   const save = () => {
     const k = value.trim()
@@ -26,7 +33,7 @@ export function KeyBanner({ visible, onSaved }: Props) {
 
   return (
     <div className={styles.banner}>
-      <span className={styles.hint}>⚡ Groq API Key:</span>
+      <span className={styles.hint}>⚡ Groq API Key (클라이언트 폴백):</span>
       <input
         className={styles.input}
         type="password"
@@ -39,11 +46,16 @@ export function KeyBanner({ visible, onSaved }: Props) {
         저장
       </button>
       <span className={styles.hint}>
-        무료 발급 →{' '}
+        권장: 서버 <code>GROQ_API_KEY</code> · 무료 발급 →{' '}
         <a href="https://console.groq.com/keys" target="_blank" rel="noreferrer">
           console.groq.com/keys
         </a>
       </span>
+      {onDismiss && (
+        <button type="button" className={styles.dismiss} onClick={onDismiss}>
+          ✕
+        </button>
+      )}
     </div>
   )
 }

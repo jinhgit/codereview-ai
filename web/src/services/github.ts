@@ -1,4 +1,5 @@
-/** GitHub blob URL → raw content URL */
+import { apiPost } from './apiClient'
+
 export function toRawGitHubUrl(url: string): string {
   let u = url.trim()
   if (u.includes('github.com') && !u.includes('raw.')) {
@@ -13,20 +14,25 @@ export async function fetchGitHubFile(
   url: string,
   token?: string,
 ): Promise<string> {
-  const raw = toRawGitHubUrl(url)
-  if (!raw) throw new Error('URL을 입력해주세요.')
-
-  const headers: Record<string, string> = {}
-  if (token?.trim()) {
-    headers.Authorization = `token ${token.trim()}`
+  if (!url.trim()) throw new Error('URL을 입력해주세요.')
+  try {
+    const res = await apiPost<{ content: string; lines: number }>(
+      '/api/v1/github/fetch',
+      { url: url.trim(), token: token?.trim() || undefined },
+      { requireKey: false },
+    )
+    return res.data.content
+  } catch {
+    // BFF 실패 시 브라우저 직접 요청 폴백
+    const raw = toRawGitHubUrl(url)
+    const headers: Record<string, string> = {}
+    if (token?.trim()) headers.Authorization = `token ${token.trim()}`
+    const r = await fetch(raw, { headers })
+    if (!r.ok) throw new Error(`HTTP ${r.status}`)
+    return r.text()
   }
-
-  const res = await fetch(raw, { headers })
-  if (!res.ok) throw new Error(`HTTP ${res.status}`)
-  return res.text()
 }
 
-/** 확장자로 언어 힌트 */
 export function guessLangFromPath(url: string): string | null {
   const path = url.split('?')[0].toLowerCase()
   if (path.endsWith('.py')) return 'python'

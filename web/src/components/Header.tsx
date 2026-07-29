@@ -4,6 +4,8 @@ import styles from './Header.module.css'
 type Props = {
   modelLabel: string
   status: StatusKind
+  bffOnline?: boolean
+  serverKey?: boolean
   onCollab?: () => void
 }
 
@@ -15,16 +17,33 @@ const STATUS: Record<StatusKind, { text: string; cls: string }> = {
   error: { text: '● Error', cls: styles.err },
 }
 
-export function Header({ modelLabel, status, onCollab }: Props) {
+export function Header({
+  modelLabel,
+  status,
+  bffOnline,
+  serverKey,
+  onCollab,
+}: Props) {
   const s = STATUS[status]
   return (
     <header className={styles.hdr}>
       <div className={styles.logo}>
         <div className={styles.logoIco}>⚡</div>
         <span>CodeReview AI</span>
-        <span className={styles.sub}>+ 오류수정 + 챗봇 + 협업</span>
+        <span className={styles.sub}>BFF · 리뷰 · 챗 · 협업</span>
       </div>
       <div className={styles.right}>
+        <span
+          className={`${styles.bx} ${bffOnline ? styles.bffOn : styles.bffOff}`}
+          title={bffOnline ? 'BFF 연결됨' : 'BFF 오프라인 — proxy 대상 확인'}
+        >
+          {bffOnline ? '● BFF' : '○ BFF'}
+        </span>
+        {serverKey && (
+          <span className={`${styles.bx} ${styles.serverKey}`} title="서버 GROQ_API_KEY 사용">
+            🔐 Server Key
+          </span>
+        )}
         <span className={`${styles.bx} ${styles.model}`}>{modelLabel}</span>
         <span className={`${styles.bx} ${s.cls}`}>{s.text}</span>
         {onCollab && (

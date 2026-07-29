@@ -164,6 +164,13 @@
 .fixBtn:hover,
 .execBtn:hover {
   opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.runBtn,
+.fixBtn,
+.execBtn {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
 .runBtn:disabled,

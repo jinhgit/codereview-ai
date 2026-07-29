@@ -1,6 +1,5 @@
 import type { ExecResult, Lang } from '../types'
-
-const PISTON = 'https://emkc.org/api/v2/piston/execute'
+import { apiPost } from './apiClient'
 
 export const LRT: Record<
   Lang,
@@ -22,8 +21,14 @@ export async function runOnPiston(
   lang: Lang,
   stdin = '',
 ): Promise<ExecResult> {
-  const rt = LRT[lang]
-  if (!rt) {
+  try {
+    const res = await apiPost<ExecResult>(
+      '/api/v1/execute',
+      { language: lang, code, stdin },
+      { requireKey: false },
+    )
+    return res.data
+  } catch (e) {
     return {
       ok: false,
       stdout: '',
@@ -32,57 +37,8 @@ export async function runOnPiston(
       compileStderr: '',
       exitCode: -1,
       elapsed: '0',
-      language: lang,
-      error: `${lang}는 현재 실행을 지원하지 않습니다`,
-    }
-  }
-
-  const t0 = Date.now()
-  const body: Record<string, unknown> = {
-    language: rt.language,
-    version: rt.version,
-    files: [{ name: rt.ext, content: code }],
-  }
-  if (stdin) body.stdin = stdin
-
-  try {
-    const res = await fetch(PISTON, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    })
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const d = await res.json()
-    const elapsed = ((Date.now() - t0) / 1000).toFixed(3)
-    const run = d.run || {}
-    const comp = d.compile || {}
-    const exitCode = typeof run.code === 'number' ? run.code : 0
-    return {
-      ok: exitCode === 0,
-      stdout: (run.stdout || '').trimEnd(),
-      stderr: (run.stderr || '').trimEnd(),
-      compileStdout: (comp.stdout || '').trimEnd(),
-      compileStderr: (comp.stderr || '').trimEnd(),
-      exitCode,
-      elapsed,
-      language: rt.language,
-    }
-  } catch (e) {
-    const elapsed = ((Date.now() - t0) / 1000).toFixed(3)
-    let msg = e instanceof Error ? e.message : '알 수 없는 오류'
-    if (/fetch|network|Failed/i.test(msg)) {
-      msg = '네트워크 연결 오류. 인터넷을 확인하거나 잠시 후 재시도해주세요.'
-    }
-    return {
-      ok: false,
-      stdout: '',
-      stderr: '',
-      compileStdout: '',
-      compileStderr: '',
-      exitCode: -1,
-      elapsed,
-      language: rt.language,
-      error: msg,
+      language: LRT[lang]?.language || lang,
+      error: e instanceof Error ? e.message : '실행 실패',
     }
   }
 }

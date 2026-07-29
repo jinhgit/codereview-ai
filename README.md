@@ -385,24 +385,31 @@ git clone https://github.com/jinhgit/codereview-ai.git
 cd codereview-ai
 ```
 
-### 2. 웹 앱 실행 (권장 · 개발 중)
-
-Vite + React + TypeScript 클라이언트가 `web/` 에 있습니다.  
-**1차 범위**: 에디터 · API Key · 코드 리뷰 · 오류 수정 · 실행 · (60점 미만) 자동 최적화
+### 2. BFF + 웹 앱 실행 (권장)
 
 ```bash
+# 의존성 (최초 1회)
+npm run install:all
+
+# 터미널 1 — BFF
+cd server
+cp .env.example .env   # GROQ_API_KEY=gsk_... 설정
+npm run dev            # http://localhost:8787
+
+# 터미널 2 — 프론트
 cd web
-npm install
-npm run dev
-# → http://localhost:5173
+npm run dev            # http://localhost:5173  ( /api → BFF 프록시 )
 ```
+
+- **권장**: `server/.env` 의 `GROQ_API_KEY` (브라우저에 키 미노출)
+- **개발 폴백**: 서버 키가 없으면 UI 배너에 클라이언트 키 입력 (`X-Groq-Key`)
 
 프로덕션 빌드:
 
 ```bash
-cd web
-npm run build    # dist/ 생성
-npm run preview  # 빌드 결과 미리보기
+npm run build:server
+npm run build:web
+npm run start:server
 ```
 
 ### 3. 프로토타입 HTML (레거시)
@@ -444,24 +451,22 @@ macOS에서 한글 폰트는 기본적으로
 ```
 codereview-ai/
 ├── README.md
-├── .gitignore
+├── package.json                       # monorepo scripts
 ├── codereview-ai.html                 # 레거시 단일 HTML 프로토타입
 ├── docs/
-│   ├── CodeReview_AI_PRD_기능명세서_API명세서.pdf
-│   └── generate_specs.py
+├── server/                            # ⭐ BFF (Express + TS)
+│   ├── .env.example
+│   ├── src/
+│   │   ├── index.ts
+│   │   ├── routes/  (ai, execute, github)
+│   │   ├── services/(groq, piston)
+│   │   └── prompts.ts
+│   └── README.md
 └── web/                               # ⭐ 웹 앱 (Vite + React + TS)
-    ├── package.json
-    ├── vite.config.ts
-    ├── index.html
+    ├── vite.config.ts                 # /api → :8787 proxy
     └── src/
-        ├── main.tsx
-        ├── App.tsx
-        ├── components/                # Header, Editor, Review, Fix, Exec, Optimize
-        ├── services/                  # groq, piston, ai, keyStore
-        ├── types/
-        ├── utils/
-        ├── data/samples.ts
-        └── styles/global.css
+        ├── components/                # UI + Toast + Collab
+        └── services/                  # apiClient → BFF
 ```
 
 | 구간 (대략) | 내용 |
@@ -513,7 +518,7 @@ codereview-ai/
 | **P2** | 웹 앱 핵심 루프 (에디터·리뷰·수정·실행) |
 | **P2.1** | 챗봇 (프로젝트/세션 · 에디터 컨텍스트) — **완료** |
 | **P2.2** | GitHub 로드 · 협업 패널 — **완료** |
-| **P2.3** | BFF (API Key 서버 보관) |
+| **P2.3** | BFF (API Key 서버 보관) + UI 개선 — **완료** |
 | **P3** | 계정 · 서버 저장 채팅/협업 |
 | **P4** | 실 Git 연동 · 팀 워크스페이스 |
 

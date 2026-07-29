@@ -25,4 +25,12 @@ __pycache__/
 node_modules/
 dist/
 web/dist/
+server/dist/
 *.local
+
+# Env secrets
+server/.env
+.env
+.env.*
+!.env.example
+!server/.env.example

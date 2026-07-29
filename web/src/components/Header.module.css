@@ -83,8 +83,28 @@
   display: flex;
   align-items: center;
   gap: 5px;
+  transition: transform 0.12s ease, opacity 0.15s;
 }
 
 .collab:hover {
   opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.bffOn {
+  background: rgba(63, 185, 80, 0.12);
+  color: var(--gn);
+  border-color: rgba(63, 185, 80, 0.35);
+}
+
+.bffOff {
+  background: rgba(139, 148, 158, 0.12);
+  color: var(--tx2);
+  border-color: rgba(139, 148, 158, 0.3);
+}
+
+.serverKey {
+  background: rgba(188, 140, 255, 0.12);
+  color: var(--pu);
+  border-color: rgba(188, 140, 255, 0.35);
 }

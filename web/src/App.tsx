@@ -9,10 +9,17 @@ import { Header } from './components/Header'
 import { KeyBanner } from './components/KeyBanner'
 import { OptimizeModal } from './components/OptimizeModal'
 import { ReviewPanel } from './components/ReviewPanel'
+import { ToastStack } from './components/Toast'
 import { SAMPLES } from './data/samples'
+import { useToast } from './hooks/useToast'
 import { analyzeCode, fixCode, optimizeCode } from './services/ai'
-import { getCurrentModelLabel } from './services/groq'
+import {
+  fetchBffConfig,
+  needsClientKey,
+  type BffConfig,
+} from './services/apiClient'
 import { getGroqKey } from './services/keyStore'
+import { DEFAULT_MODEL_LABEL } from './services/models'
 import { runOnPiston } from './services/piston'
 import type {
   ExecResult,
@@ -28,12 +35,14 @@ import { detectLang } from './utils/detectLang'
 import styles from './App.module.css'
 
 export default function App() {
+  const toast = useToast()
   const [code, setCode] = useState(SAMPLES.buggy)
   const [lang, setLang] = useState<Lang>('python')
   const [activeSample, setActiveSample] = useState('buggy')
-  const [hasKey, setHasKey] = useState(() => !!getGroqKey())
-  const [showKeyBanner, setShowKeyBanner] = useState(() => !getGroqKey())
-  const [modelLabel, setModelLabel] = useState(getCurrentModelLabel)
+  const [bffConfig, setBffConfig] = useState<BffConfig | null>(null)
+  const [bffOnline, setBffOnline] = useState(false)
+  const [showKeyBanner, setShowKeyBanner] = useState(false)
+  const [modelLabel, setModelLabel] = useState(DEFAULT_MODEL_LABEL)
   const [status, setStatus] = useState<StatusKind>('ready')
   const [leftTab, setLeftTab] = useState<LeftTab>('editor')
   const [rightTab, setRightTab] = useState<RightTab>('review')
@@ -60,25 +69,39 @@ export default function App() {
   const [optResult, setOptResult] = useState<OptimizeResult | null>(null)
 
   const busy = reviewLoading || fixLoading || execRunning || optLoading
+  const hasAuth =
+    !!bffConfig?.hasServerKey || (!!getGroqKey() && !!bffConfig?.allowClientKey)
 
   useEffect(() => {
-    const id = setInterval(() => {
-      const k = getGroqKey()
-      if (k && !hasKey) {
-        setHasKey(true)
-        setShowKeyBanner(false)
+    let cancelled = false
+    ;(async () => {
+      try {
+        const res = await fetch('/api/v1/health')
+        if (!cancelled) setBffOnline(res.ok)
+      } catch {
+        if (!cancelled) setBffOnline(false)
       }
-    }, 500)
-    return () => clearInterval(id)
-  }, [hasKey])
+      const cfg = await fetchBffConfig()
+      if (cancelled) return
+      setBffConfig(cfg)
+      // 서버 키가 있으면 배너 숨김. 없으면 클라이언트 키 필요
+      setShowKeyBanner(!cfg.hasServerKey && cfg.allowClientKey && !getGroqKey())
+      if (cfg.hasServerKey) {
+        toast.info('BFF 서버 키 모드 — API Key는 서버에서 관리됩니다')
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const needKey = useCallback(() => {
-    if (!getGroqKey()) {
-      setShowKeyBanner(true)
-      return true
-    }
-    return false
-  }, [])
+    if (!needsClientKey()) return false
+    setShowKeyBanner(true)
+    toast.error('Groq API 키를 입력해주세요')
+    return true
+  }, [toast])
 
   const onModelChange = useCallback((label: string) => {
     setModelLabel(label)
@@ -88,7 +111,7 @@ export default function App() {
     if (needKey()) return
     const c = code.trim()
     if (!c) {
-      alert('코드를 입력해주세요.')
+      toast.error('코드를 입력해주세요.')
       return
     }
     setRightTab('review')
@@ -99,8 +122,11 @@ export default function App() {
     try {
       const r = await analyzeCode(c, lang, onModelChange)
       setReview(r)
+      toast.success('코드 리뷰 완료')
     } catch (e) {
-      setReviewError(e instanceof Error ? e.message : '분석 실패')
+      const msg = e instanceof Error ? e.message : '분석 실패'
+      setReviewError(msg)
+      toast.error(msg)
     } finally {
       setReviewLoading(false)
       setStatus('ready')
@@ -111,7 +137,7 @@ export default function App() {
     if (needKey()) return
     const c = code.trim()
     if (!c) {
-      alert('코드를 입력해주세요.')
+      toast.error('코드를 입력해주세요.')
       return
     }
     setRightTab('fix')
@@ -125,8 +151,13 @@ export default function App() {
       setFixResult(r)
       setFixedCode(r.fixed_full_code || '')
       setFixDot(!!(r.has_errors && (r.error_count || 0) > 0))
+      toast.success(
+        r.has_errors ? '오류 수정 완료' : '오류가 없습니다',
+      )
     } catch (e) {
-      setFixError(e instanceof Error ? e.message : '수정 실패')
+      const msg = e instanceof Error ? e.message : '수정 실패'
+      setFixError(msg)
+      toast.error(msg)
     } finally {
       setFixLoading(false)
       setStatus('ready')
@@ -136,7 +167,7 @@ export default function App() {
   const handleRun = async () => {
     const c = code.trim()
     if (!c) {
-      alert('실행할 코드를 입력해주세요.')
+      toast.error('실행할 코드를 입력해주세요.')
       return
     }
     const detected = detectLang(c)
@@ -150,6 +181,9 @@ export default function App() {
     try {
       const r = await runOnPiston(c, useLang, stdin)
       setExecResult(r)
+      if (r.error) toast.error(r.error)
+      else if (r.ok) toast.success('실행 완료')
+      else toast.error('실행 중 오류가 발생했습니다')
     } finally {
       setExecRunning(false)
       setStatus('ready')
@@ -160,7 +194,7 @@ export default function App() {
     if (needKey()) return
     const c = code.trim()
     if (!c) {
-      alert('코드를 입력해주세요.')
+      toast.error('코드를 입력해주세요.')
       return
     }
     setOptOpen(true)
@@ -170,8 +204,11 @@ export default function App() {
     try {
       const r = await optimizeCode(c, lang, onModelChange)
       setOptResult(r)
+      toast.success('최적화 완료')
     } catch (e) {
-      setOptError(e instanceof Error ? e.message : '최적화 실패')
+      const msg = e instanceof Error ? e.message : '최적화 실패'
+      setOptError(msg)
+      toast.error(msg)
     } finally {
       setOptLoading(false)
     }
@@ -181,11 +218,11 @@ export default function App() {
     setCode(next)
     setActiveSample('')
     setFixDot(false)
+    toast.success('에디터에 코드를 적용했습니다')
   }
 
   const applyFromChat = (next: string) => {
     applyCode(next)
-    // 적용 직후 에디터 하이라이트 느낌
     setLeftTab('editor')
   }
 
@@ -194,14 +231,18 @@ export default function App() {
       <Header
         modelLabel={modelLabel}
         status={status}
+        bffOnline={bffOnline}
+        serverKey={!!bffConfig?.hasServerKey}
         onCollab={() => setCollabOpen(true)}
       />
       <KeyBanner
         visible={showKeyBanner}
+        serverKeyMode={!!bffConfig?.hasServerKey}
         onSaved={() => {
-          setHasKey(true)
           setShowKeyBanner(false)
+          toast.success('API 키가 저장되었습니다')
         }}
+        onDismiss={() => setShowKeyBanner(false)}
       />
 
       <div className={styles.app}>
@@ -258,6 +299,7 @@ export default function App() {
                   if (d) setLang(d)
                 }
                 setLeftTab('editor')
+                toast.success('GitHub 코드를 불러왔습니다')
               }}
             />
           )}
@@ -309,9 +351,9 @@ export default function App() {
                 error={reviewError}
                 result={review}
                 emptyHint={
-                  hasKey
+                  hasAuth
                     ? '코드를 입력하고 ⚡ 코드 리뷰를 누르세요'
-                    : 'Groq API 키 입력 후 시작'
+                    : 'BFF 서버 키 또는 Groq API 키 설정 후 시작'
                 }
                 onOptimize={handleOptimize}
                 optimizeBusy={optLoading}
@@ -344,6 +386,8 @@ export default function App() {
         needKey={needKey}
         onModelChange={onModelChange}
       />
+
+      <ToastStack toasts={toast.toasts} onDismiss={toast.dismiss} />
     </div>
   )
 }

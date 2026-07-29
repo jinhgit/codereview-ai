@@ -3,6 +3,10 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  background:
+    radial-gradient(1200px 400px at 10% -10%, rgba(31, 111, 235, 0.12), transparent 60%),
+    radial-gradient(900px 360px at 90% 0%, rgba(138, 43, 226, 0.08), transparent 55%),
+    var(--bg);
 }
 
 .app {

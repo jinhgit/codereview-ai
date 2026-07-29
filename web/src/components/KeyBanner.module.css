@@ -50,3 +50,24 @@
   color: #ff8c42;
   font-weight: 700;
 }
+
+.hint code {
+  font-family: var(--mono);
+  font-size: 10px;
+  background: rgba(0, 0, 0, 0.35);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.dismiss {
+  background: none;
+  border: none;
+  color: #ff8c72;
+  font-size: 12px;
+  padding: 4px 6px;
+  margin-left: auto;
+}
+
+.dismiss:hover {
+  color: #fff;
+}
