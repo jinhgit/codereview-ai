@@ -10,6 +10,7 @@
 | 상태 | Prototype (Vanilla JS SPA) |
 | 메인 파일 | [`codereview-ai.html`](./codereview-ai.html) |
 | 제품 문서 | [`docs/CodeReview_AI_PRD_기능명세서_API명세서.pdf`](./docs/CodeReview_AI_PRD_기능명세서_API명세서.pdf) |
+| 컨텍스트 인수인계 | [`docs/CONTEXT_HANDOFF.md`](./docs/CONTEXT_HANDOFF.md) — 세션 전환·재개용 |
 | 저장소 | https://github.com/jinhgit/codereview-ai |
 
 ---
