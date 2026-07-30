@@ -22,6 +22,7 @@ import type { ChatStore, LlmTurn } from '../types/chat'
 import { extractCode, fmtBot } from '../utils/fmtBot'
 import { esc } from '../utils/escape'
 import { ProjectModal } from './ProjectModal'
+import { Icon, IconLabel } from './icons'
 import styles from './ChatPane.module.css'
 
 const SUGGESTS = [
@@ -160,7 +161,7 @@ export function ChatPane({
       let next = setChatHistory(s, chatId, failedHist)
       next = appendMessage(next, chatId, {
         role: 'bot',
-        html: `❌ 오류: ${esc(err)}`,
+        html: `오류: ${esc(err)}`,
         time: nowT(),
       })
       persist(next)
@@ -181,20 +182,20 @@ export function ChatPane({
             className={styles.newChat}
             onClick={() => handleNewChat(null)}
           >
-            ✚ 새 채팅
+            <IconLabel name="plus" size={12}>새 채팅</IconLabel>
           </button>
           <button
             type="button"
             className={styles.newProj}
             onClick={() => setProjModal(true)}
           >
-            📁 + 프로젝트
+            <IconLabel name="folder" size={12}>+ 프로젝트</IconLabel>
           </button>
         </div>
         <div className={styles.sbBody}>
           {store.projects.length > 0 && (
             <>
-              <div className={styles.sbLbl}>📁 프로젝트</div>
+              <div className={styles.sbLbl}><IconLabel name="folder" size={10}>프로젝트</IconLabel></div>
               {store.projects.map((proj) => {
                 const chats = store.chats.filter((c) => c.projectId === proj.id)
                 const open = !proj.collapsed
@@ -218,7 +219,7 @@ export function ChatPane({
                         <span className={styles.cnt}>({chats.length})</span>
                       </span>
                       <span className={`${styles.arr} ${open ? styles.op : ''}`}>
-                        ›
+                        <Icon name="chevronRight" size={11} />
                       </span>
                     </div>
                     {open && (
@@ -265,7 +266,7 @@ export function ChatPane({
           {generalChats.length > 0 && (
             <>
               <div className={styles.sbLbl} style={{ marginTop: 6 }}>
-                💬 채팅
+                <IconLabel name="message" size={10}>채팅</IconLabel>
               </div>
               {generalChats.map((c) => (
                 <ChatItem
@@ -302,7 +303,7 @@ export function ChatPane({
           {(!active || active.messages.length === 0) && !typing && (
             <div className={`${styles.cmsg} ${styles.bot}`}>
               <div className={`${styles.cbub} ${styles.botBub}`}>
-                👋 안녕하세요! 코드 AI 어시스턴트입니다.
+                안녕하세요! 코드 AI 어시스턴트입니다.
                 <br />
                 <br />• <code>버블정렬 구현해줘</code>
                 <br />• <code>현재 코드 설명해줘</code>
@@ -332,7 +333,7 @@ export function ChatPane({
                   className={styles.apply}
                   onClick={() => applyToEditor(m.code!)}
                 >
-                  ↩ 에디터에 적용
+                  <IconLabel name="arrowLeft" size={11}>에디터에 적용</IconLabel>
                 </button>
               ) : null}
               <div className={styles.ctime}>{m.time}</div>
@@ -390,7 +391,7 @@ export function ChatPane({
               disabled={sending || !input.trim()}
               onClick={() => void send()}
             >
-              ▶
+              <Icon name="send" size={14} />
             </button>
           </div>
         </div>
@@ -434,7 +435,7 @@ function ChatItem({
           onDelete()
         }}
       >
-        ✕
+        <Icon name="x" size={10} />
       </button>
     </div>
   )

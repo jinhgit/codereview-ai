@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { copyText } from '../hooks/useClipboard'
 import type { OptimizeResult } from '../types'
+import { Icon, IconLabel } from './icons'
 import styles from './OptimizeModal.module.css'
 
 type Props = {
@@ -38,9 +39,9 @@ export function OptimizeModal({
     >
       <div className={styles.modal}>
         <div className={styles.hdr}>
-          <div className={styles.hdrTitle}>🚀 AI 자동 최적화 결과</div>
+          <div className={styles.hdrTitle}><IconLabel name="rocket" size={14}>AI 자동 최적화 결과</IconLabel></div>
           <button type="button" className={styles.x} onClick={onClose}>
-            ✕
+            <Icon name="x" size={16} />
           </button>
         </div>
 
@@ -53,7 +54,7 @@ export function OptimizeModal({
           )}
 
           {!loading && error && (
-            <div className={styles.err}>❌ {error}</div>
+            <div className={styles.err}><IconLabel name="xCircle" size={13}>{error}</IconLabel></div>
           )}
 
           {!loading && !error && result && (
@@ -66,7 +67,7 @@ export function OptimizeModal({
                       {result.score_before ?? '?'}
                     </div>
                   </div>
-                  <div className={styles.arrow}>→</div>
+                  <div className={styles.arrow}><Icon name="arrowRight" size={16} /></div>
                   <div className={styles.scoreBox}>
                     <div className={styles.scoreLbl}>최적화 후</div>
                     <div className={styles.scoreAfter}>
@@ -96,7 +97,7 @@ export function OptimizeModal({
 
               <div className={styles.codeSec}>
                 <div className={styles.codeHdr}>
-                  <span>✅ 최적화된 코드</span>
+                  <span><IconLabel name="checkCircle" size={12}>최적화된 코드</IconLabel></span>
                   <button
                     type="button"
                     className={styles.copy}
@@ -109,7 +110,7 @@ export function OptimizeModal({
                       }
                     }}
                   >
-                    {copied ? '✅ 복사됨' : '📋 복사'}
+                    {copied ? <IconLabel name="check" size={11}>복사됨</IconLabel> : <IconLabel name="copy" size={11}>복사</IconLabel>}
                   </button>
                 </div>
                 <pre className={styles.code}>{result.optimized_code}</pre>
@@ -132,7 +133,7 @@ export function OptimizeModal({
                 onClose()
               }}
             >
-              ↩ 에디터에 적용
+              <IconLabel name="arrowLeft" size={12}>에디터에 적용</IconLabel>
             </button>
           )}
         </div>

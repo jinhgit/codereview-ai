@@ -3,6 +3,7 @@ import { SAMPLE_CHIPS, SAMPLES } from '../data/samples'
 import type { Lang } from '../types'
 import { LANG_OPTIONS } from '../types'
 import { detectLang } from '../utils/detectLang'
+import { IconLabel } from './icons'
 import styles from './EditorPane.module.css'
 
 type Props = {
@@ -130,7 +131,9 @@ export function EditorPane({
             onClick={onReview}
           >
             {busy ? <span className="spin" /> : null}
-            ⚡ 코드 리뷰
+            <IconLabel name="zap" size={13}>
+              코드 리뷰
+            </IconLabel>
           </button>
           <button
             type="button"
@@ -138,7 +141,9 @@ export function EditorPane({
             disabled={busy}
             onClick={onFix}
           >
-            🔧 오류 수정
+            <IconLabel name="wrench" size={13}>
+              오류 수정
+            </IconLabel>
           </button>
           <button
             type="button"
@@ -146,7 +151,9 @@ export function EditorPane({
             disabled={busy}
             onClick={onRun}
           >
-            <span>▶</span> 실행
+            <IconLabel name="play" size={13}>
+              실행
+            </IconLabel>
           </button>
         </div>
       </div>

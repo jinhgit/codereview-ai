@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { IconLabel } from '../icons'
 import styles from './CollabPanel.module.css'
 
 const COLS = ['#58a6ff', '#3fb950', '#d29922', '#f85149', '#bc8cff', '#39d2c0']
@@ -22,10 +23,22 @@ export function Avatar({ name, size = 22 }: { name: string; size?: number }) {
 
 export function StatusBadge({ status }: { status: string }) {
   if (status === 'open')
-    return <span className={`${styles.badge} ${styles.badgeOpen}`}>● Open</span>
+    return (
+      <span className={`${styles.badge} ${styles.badgeOpen}`}>
+        <IconLabel name="circleDot" size={9}>Open</IconLabel>
+      </span>
+    )
   if (status === 'merged')
-    return <span className={`${styles.badge} ${styles.badgeMerged}`}>✓ Merged</span>
-  return <span className={`${styles.badge} ${styles.badgeClosed}`}>✕ Closed</span>
+    return (
+      <span className={`${styles.badge} ${styles.badgeMerged}`}>
+        <IconLabel name="check" size={9}>Merged</IconLabel>
+      </span>
+    )
+  return (
+    <span className={`${styles.badge} ${styles.badgeClosed}`}>
+      <IconLabel name="x" size={9}>Closed</IconLabel>
+    </span>
+  )
 }
 
 export function Card({

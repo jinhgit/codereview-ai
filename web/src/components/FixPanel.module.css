@@ -36,9 +36,11 @@
 }
 
 .emptyI {
-  font-size: 36px;
   margin-bottom: 10px;
-  opacity: 0.3;
+  opacity: 0.45;
+  color: var(--tx2);
+  display: flex;
+  justify-content: center;
 }
 
 .emptyT {

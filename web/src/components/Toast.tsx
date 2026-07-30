@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { Icon } from './icons'
 import styles from './Toast.module.css'
 
 export type ToastItem = {
@@ -34,6 +35,13 @@ function Toast({
     return () => clearTimeout(id)
   }, [item.id, onDismiss])
 
+  const icon =
+    item.type === 'success'
+      ? 'check'
+      : item.type === 'error'
+        ? 'alertCircle'
+        : 'info'
+
   return (
     <div
       className={`${styles.toast} ${styles[item.type]}`}
@@ -41,7 +49,7 @@ function Toast({
       onClick={() => onDismiss(item.id)}
     >
       <span className={styles.ico}>
-        {item.type === 'success' ? '✓' : item.type === 'error' ? '!' : 'i'}
+        <Icon name={icon} size={12} />
       </span>
       <span className={styles.msg}>{item.message}</span>
     </div>

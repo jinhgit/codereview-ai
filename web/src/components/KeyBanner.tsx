@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { isValidGroqKey, setGroqKey } from '../services/keyStore'
+import { Icon, IconLabel } from './icons'
 import styles from './KeyBanner.module.css'
 
 type Props = {
@@ -33,7 +34,11 @@ export function KeyBanner({
 
   return (
     <div className={styles.banner}>
-      <span className={styles.hint}>⚡ Groq API Key (클라이언트 폴백):</span>
+      <span className={styles.hint}>
+        <IconLabel name="zap" size={12}>
+          Groq API Key (클라이언트 폴백):
+        </IconLabel>
+      </span>
       <input
         className={styles.input}
         type="password"
@@ -53,7 +58,7 @@ export function KeyBanner({
       </span>
       {onDismiss && (
         <button type="button" className={styles.dismiss} onClick={onDismiss}>
-          ✕
+          <Icon name="x" size={12} />
         </button>
       )}
     </div>

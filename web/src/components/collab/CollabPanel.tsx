@@ -26,7 +26,22 @@ import { ME } from '../../types/collab'
 import { computeDiff } from '../../utils/diff'
 import { ago } from '../../utils/time'
 import { Avatar, Card, StatusBadge } from './collabShared'
+import { Icon, IconLabel, type IconName } from '../icons'
 import styles from './CollabPanel.module.css'
+
+const REPO_ICONS: IconName[] = ['rocket', 'lightbulb', 'zap', 'flame', 'star', 'hammer', 'target', 'building']
+
+function RepoIcon({ name, size = 16 }: { name?: string; size?: number }) {
+  const n = (REPO_ICONS.includes(name as IconName) ? name : 'rocket') as IconName
+  return <Icon name={n} size={size} />
+}
+
+const REACT_ICONS: Record<string, IconName> = {
+  '👍': 'thumbsUp',
+  '👎': 'thumbsDown',
+  '🎉': 'sparkles',
+  '❓': 'help',
+}
 
 const LOG_CLR: Record<string, string> = {
   repo_created: '#58a6ff',
@@ -78,7 +93,7 @@ export function CollabPanel({ open, onClose, needKey, onModelChange }: Props) {
     <div className={styles.overlay}>
       <div className={styles.hdr}>
         <div className={styles.hdrLeft}>
-          <div className={styles.logo}>🤝</div>
+          <div className={styles.logo}><Icon name="users" size={14} /></div>
           <span className={styles.hdrTitle}>협업 시스템</span>
           <div className={styles.bc}>
             {repo && (
@@ -102,9 +117,9 @@ export function CollabPanel({ open, onClose, needKey, onModelChange }: Props) {
           </div>
         </div>
         <div className={styles.hdrRight}>
-          <span className={styles.connected}>● 연결됨</span>
+          <span className={styles.connected}><IconLabel name="circleDot" size={10}>연결됨</IconLabel></span>
           <button type="button" className={styles.closeBtn} onClick={onClose}>
-            ✕ 닫기
+            <IconLabel name="x" size={12}>닫기</IconLabel>
           </button>
         </div>
       </div>
@@ -151,7 +166,7 @@ export function CollabPanel({ open, onClose, needKey, onModelChange }: Props) {
                     className={styles.repoIco}
                     style={{ background: `${r.color}22` }}
                   >
-                    {r.emoji}
+                    <RepoIcon name={r.emoji} size={14} />
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div className={styles.repoName}>{r.name}</div>
@@ -171,13 +186,13 @@ export function CollabPanel({ open, onClose, needKey, onModelChange }: Props) {
             <div className={styles.nav}>
               {(
                 [
-                  ['overview', '📋 개요'],
-                  ['branches', '🌿 브랜치'],
-                  ['prs', '🔀 Pull Requests'],
-                  ['activity', '📊 활동 로그'],
-                  ['aireview', '🤖 AI 리뷰'],
-                ] as [CollabView, string][]
-              ).map(([k, label]) => (
+                  ['overview', 'clipboard', '개요'],
+                  ['branches', 'branch', '브랜치'],
+                  ['prs', 'gitMerge', 'Pull Requests'],
+                  ['activity', 'chart', '활동 로그'],
+                  ['aireview', 'bot', 'AI 리뷰'],
+                ] as [CollabView, IconName, string][]
+              ).map(([k, icon, label]) => (
                 <button
                   key={k}
                   type="button"
@@ -187,7 +202,7 @@ export function CollabPanel({ open, onClose, needKey, onModelChange }: Props) {
                     setPrId(null)
                   }}
                 >
-                  {label}
+                  <IconLabel name={icon} size={12}>{label}</IconLabel>
                 </button>
               ))}
             </div>
@@ -196,7 +211,7 @@ export function CollabPanel({ open, onClose, needKey, onModelChange }: Props) {
           <div className={styles.content}>
             {!repo ? (
               <div className={styles.emptyCenter}>
-                👈 저장소를 선택하거나 새로 만드세요
+                저장소를 선택하거나 새로 만드세요
               </div>
             ) : prId && pr ? (
               <PrDetail
@@ -307,7 +322,7 @@ function Overview({
     <div className={styles.wrap}>
       <div className={styles.repoHeader}>
         <div className={styles.repoBigIco} style={{ background: `${repo.color}22` }}>
-          {repo.emoji}
+          <RepoIcon name={repo.emoji} size={28} />
         </div>
         <div style={{ flex: 1 }}>
           <div className={styles.repoBigName}>{repo.name}</div>
@@ -315,34 +330,34 @@ function Overview({
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button type="button" className={styles.btnGhost} onClick={onNewBranch}>
-            🌿 새 브랜치
+            <IconLabel name="branch" size={12}>새 브랜치</IconLabel>
           </button>
           <button type="button" className={styles.btnPrimary} onClick={onNewPr}>
-            🔀 PR 생성
+            <IconLabel name="gitMerge" size={12}>PR 생성</IconLabel>
           </button>
         </div>
       </div>
 
       <div className={styles.statGrid}>
         <div className={styles.statCard}>
-          <div className={styles.statIco}>🌿</div>
+          <div className={styles.statIco}><Icon name="branch" size={18} /></div>
           <div className={styles.statVal}>{brs.length}</div>
           <div className={styles.statLbl}>브랜치</div>
         </div>
         <div className={styles.statCard}>
-          <div className={styles.statIco}>🔀</div>
+          <div className={styles.statIco}><Icon name="gitMerge" size={18} /></div>
           <div className={styles.statVal}>
             {prs.filter((p) => p.status === 'open').length}
           </div>
           <div className={styles.statLbl}>열린 PR</div>
         </div>
         <div className={styles.statCard}>
-          <div className={styles.statIco}>👥</div>
+          <div className={styles.statIco}><Icon name="users" size={18} /></div>
           <div className={styles.statVal}>{repo.members.length}</div>
           <div className={styles.statLbl}>멤버</div>
         </div>
         <div className={styles.statCard}>
-          <div className={styles.statIco}>✅</div>
+          <div className={styles.statIco}><Icon name="checkCircle" size={18} /></div>
           <div className={styles.statVal}>
             {prs.filter((p) => p.status === 'merged').length}
           </div>
@@ -350,7 +365,7 @@ function Overview({
         </div>
       </div>
 
-      <Card title="⚙️ 머지 규칙">
+      <Card title={<IconLabel name="settings" size={13}>머지 규칙</IconLabel>}>
         {(
           [
             ['requireApproval', '승인 필수', '머지 전 리뷰어 승인 필요'],
@@ -380,7 +395,7 @@ function Overview({
       </Card>
 
       <Card
-        title={`👥 멤버 (${repo.members.length})`}
+        title={<IconLabel name="users" size={13}>멤버 ({repo.members.length})</IconLabel>}
         action={
           <button
             type="button"
@@ -397,7 +412,7 @@ function Overview({
               }
             }}
           >
-            + 추가
+            <IconLabel name="plus" size={10}>추가</IconLabel>
           </button>
         }
       >
@@ -416,7 +431,7 @@ function Overview({
         </div>
       </Card>
 
-      <Card title="📊 최근 활동">
+      <Card title={<IconLabel name="chart" size={13}>최근 활동</IconLabel>}>
         {logs.length === 0 ? (
           <div style={{ padding: 14, textAlign: 'center', color: '#8b949e', fontSize: 11 }}>
             활동 없음
@@ -457,7 +472,7 @@ function BranchesView({
   return (
     <div className={styles.wrap}>
       <div className={styles.rowBetween}>
-        <h2 className={styles.h2}>🌿 브랜치 ({brs.length})</h2>
+        <h2 className={styles.h2}><IconLabel name="branch" size={16}>브랜치 ({brs.length})</IconLabel></h2>
         <button
           type="button"
           className={styles.btnPrimary}
@@ -467,7 +482,7 @@ function BranchesView({
             persist(createBranch(cs, repo.id, name.trim()))
           }}
         >
-          + 새 브랜치
+          <IconLabel name="plus" size={12}>새 브랜치</IconLabel>
         </button>
       </div>
       {brs.map((b) => {
@@ -476,7 +491,7 @@ function BranchesView({
         ).length
         return (
           <div key={b.id} className={styles.branchCard}>
-            <div style={{ fontSize: 20 }}>{b.isDefault ? '🌲' : '🌿'}</div>
+            <div style={{ fontSize: 20 }}><Icon name={b.isDefault ? 'tree' : 'branch'} size={20} /></div>
             <div style={{ flex: 1 }}>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 3 }}>
                 <span className={styles.branchName}>{b.name}</span>
@@ -538,9 +553,9 @@ function PrListView({
   return (
     <div className={styles.wrap}>
       <div className={styles.rowBetween}>
-        <h2 className={styles.h2}>🔀 Pull Requests</h2>
+        <h2 className={styles.h2}><IconLabel name="gitMerge" size={16}>Pull Requests</IconLabel></h2>
         <button type="button" className={styles.btnPrimary} onClick={onNewPr}>
-          + PR 생성
+          <IconLabel name="plus" size={12}>PR 생성</IconLabel>
         </button>
       </div>
       <div style={{ display: 'flex', borderBottom: '1px solid #30363d', marginBottom: 16 }}>
@@ -574,13 +589,13 @@ function PrListView({
                 </div>
                 <div style={{ fontSize: 10, display: 'flex', gap: 10 }}>
                   <span style={{ color: canM ? '#3fb950' : '#d29922' }}>
-                    ✓ 승인 {app}/{req}
+                    <IconLabel name="check" size={10}>승인 {app}/{req}</IconLabel>
                   </span>
-                  <span style={{ color: '#8b949e' }}>💬 {pr.comments.length}</span>
+                  <span style={{ color: '#8b949e' }}><IconLabel name="message" size={10}>{pr.comments.length}</IconLabel></span>
                   {lastAI ? (
-                    <span style={{ color: '#bc8cff' }}>🤖 AI {lastAI.score}/100</span>
+                    <span style={{ color: '#bc8cff' }}><IconLabel name="bot" size={10}>AI {lastAI.score}/100</IconLabel></span>
                   ) : (
-                    <span style={{ color: '#8b949e' }}>🤖 AI 미분석</span>
+                    <span style={{ color: '#8b949e' }}><IconLabel name="bot" size={10}>AI 미분석</IconLabel></span>
                   )}
                 </div>
               </button>
@@ -688,7 +703,7 @@ function PrDetail({
         style={{ marginBottom: 12 }}
         onClick={onBack}
       >
-        ← PR 목록
+        <IconLabel name="arrowLeft" size={12}>PR 목록</IconLabel>
       </button>
 
       <div className={styles.rowBetween}>
@@ -723,12 +738,12 @@ function PrDetail({
                 persist(next)
               }}
             >
-              ✓ 승인
+              <IconLabel name="check" size={12}>승인</IconLabel>
             </button>
           )}
           {iApp && (
             <span style={{ padding: '6px 16px', color: '#3fb950', fontSize: 11, fontWeight: 600 }}>
-              ✓ 승인됨
+              <IconLabel name="check" size={12}>승인됨</IconLabel>
             </span>
           )}
           {canM && (
@@ -739,7 +754,7 @@ function PrDetail({
                 if (confirm('PR을 머지할까요?')) persist(mergePR(cs, pr.id, repo))
               }}
             >
-              🎉 Merge PR
+              <IconLabel name="sparkles" size={12}>Merge PR</IconLabel>
             </button>
           )}
           {pr.status === 'open' && (
@@ -757,20 +772,20 @@ function PrDetail({
       <div className={styles.pdTabs}>
         {(
           [
-            ['diff', '📄 Diff'],
-            ['desc', '📝 설명'],
-            ['review', `💬 리뷰 (${pr.comments.length})`],
-            ['aireview', `🤖 AI 리뷰${lastAI ? ' ✓' : ''}`],
-            ['log', `📊 활동 (${pr.activity.length})`],
-          ] as [PrSubTab, string][]
-        ).map(([k, label]) => (
+            ['diff', 'file', 'Diff'],
+            ['desc', 'book', '설명'],
+            ['review', 'message', `리뷰 (${pr.comments.length})`],
+            ['aireview', 'bot', lastAI ? 'AI 리뷰 ✓' : 'AI 리뷰'],
+            ['log', 'chart', `활동 (${pr.activity.length})`],
+          ] as [PrSubTab, IconName, string][]
+        ).map(([k, icon, label]) => (
           <button
             key={k}
             type="button"
             className={`${styles.pdTab} ${tab === k ? styles.pdActive : ''}`}
             onClick={() => setTab(k)}
           >
-            {label}
+            <IconLabel name={icon} size={12}>{label}</IconLabel>
           </button>
         ))}
       </div>
@@ -778,7 +793,7 @@ function PrDetail({
       {tab === 'diff' && (
         <div>
           <div className={styles.diffStats}>
-            <span className={styles.codeChip}>📄 review.py</span>
+            <span className={styles.codeChip}><IconLabel name="file" size={10}>review.py</IconLabel></span>
             <span style={{ color: '#3fb950' }}>+{adds}</span>
             <span style={{ color: '#f85149' }}>-{dels}</span>
             <div className={styles.diffBar}>
@@ -850,7 +865,7 @@ function PrDetail({
                                   )
                                 }}
                               >
-                                {em}
+                                <Icon name={REACT_ICONS[em]} size={12} />
                                 {cnt ? ` ${cnt}` : ''}
                               </button>
                             )
@@ -995,7 +1010,7 @@ function PrDetail({
                   <Avatar name={r} size={20} />
                   <span style={{ flex: 1, fontSize: 11 }}>{r}</span>
                   <span style={{ fontSize: 10, color: ok ? '#3fb950' : '#d29922' }}>
-                    {ok ? '✓ 승인' : '⏳ 대기'}
+                    {ok ? <IconLabel name="check" size={10}>승인</IconLabel> : <IconLabel name="clock" size={10}>대기</IconLabel>}
                   </span>
                 </div>
               )
@@ -1165,7 +1180,7 @@ function PrDetail({
                     type: 'approved',
                     author: ME,
                     desc:
-                      '⚡ AI 무시·강제 승인' +
+                      'AI 무시·강제 승인' +
                       (humanNote ? ` — ${humanNote.slice(0, 30)}` : ''),
                     time: Date.now(),
                   },
@@ -1232,13 +1247,13 @@ function AiReviewTab({
     <div>
       <div className={styles.rowBetween}>
         <div>
-          <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 3 }}>🤖 AI 코드 리뷰</div>
+          <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 3 }}><IconLabel name="bot" size={14}>AI 코드 리뷰</IconLabel></div>
           <div style={{ fontSize: 11, color: '#8b949e' }}>
             AI가 코드를 분석하고 사람이 최종 검토합니다
           </div>
         </div>
         <button type="button" className={styles.btnPrimary} disabled={aiLoading} onClick={onRun}>
-          {aiLoading ? '분석 중...' : lastAI ? '🤖 AI 재분석' : '🤖 AI 분석 시작'}
+          {aiLoading ? '분석 중...' : lastAI ? <IconLabel name="bot" size={12}>AI 재분석</IconLabel> : <IconLabel name="bot" size={12}>AI 분석 시작</IconLabel>}
         </button>
       </div>
 
@@ -1251,7 +1266,7 @@ function AiReviewTab({
       {aiErr && (
         <div className={styles.card}>
           <div className={styles.cardBody} style={{ color: '#f85149' }}>
-            ❌ {aiErr}
+            <IconLabel name="xCircle" size={12}>{aiErr}</IconLabel>
           </div>
         </div>
       )}
@@ -1265,7 +1280,7 @@ function AiReviewTab({
             color: '#8b949e',
           }}
         >
-          <div style={{ fontSize: 42, opacity: 0.35, marginBottom: 12 }}>🤖</div>
+          <div style={{ opacity: 0.35, marginBottom: 12 }}><Icon name="bot" size={42} /></div>
           <div style={{ fontSize: 13, fontWeight: 600, color: '#e6edf3', marginBottom: 8 }}>
             AI 분석을 시작하세요
           </div>
@@ -1309,13 +1324,13 @@ function AiReviewTab({
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', fontSize: 10 }}>
                 <span style={{ color: '#8b949e' }}>사람 검토:</span>
                 <span style={{ color: '#3fb950' }}>
-                  ✓ 수락 {lastAI.items.filter((i) => i.hd === 'accept').length}
+                  <IconLabel name="check" size={10}>수락 {lastAI.items.filter((i) => i.hd === 'accept').length}</IconLabel>
                 </span>
                 <span style={{ color: '#f85149' }}>
-                  ✕ 무시 {lastAI.items.filter((i) => i.hd === 'reject').length}
+                  <IconLabel name="x" size={10}>무시 {lastAI.items.filter((i) => i.hd === 'reject').length}</IconLabel>
                 </span>
                 <span style={{ color: '#d29922' }}>
-                  💬 논의 {lastAI.items.filter((i) => i.hd === 'discuss').length}
+                  <IconLabel name="message" size={10}>논의 {lastAI.items.filter((i) => i.hd === 'discuss').length}</IconLabel>
                 </span>
               </div>
             </div>
@@ -1380,14 +1395,14 @@ function AiReviewTab({
                     </pre>
                   )}
                   <div className={styles.hdBtns}>
-                    <span style={{ fontSize: 10, color: '#8b949e' }}>👤 검토:</span>
+                    <span style={{ fontSize: 10, color: '#8b949e' }}><IconLabel name="user" size={10}>검토:</IconLabel></span>
                     {(
                       [
-                        ['accept', '✓ 수락', '#3fb950'],
-                        ['reject', '✕ 무시', '#f85149'],
-                        ['discuss', '💬 논의', '#d29922'],
+                        ['accept', 'check', '수락', '#3fb950'],
+                        ['reject', 'x', '무시', '#f85149'],
+                        ['discuss', 'message', '논의', '#d29922'],
                       ] as const
-                    ).map(([k, label, color]) => (
+                    ).map(([k, ic, label, color]) => (
                       <button
                         key={k}
                         type="button"
@@ -1403,7 +1418,7 @@ function AiReviewTab({
                         }
                         onClick={() => onHd(item.id, k)}
                       >
-                        {label}
+                        <IconLabel name={ic} size={10}>{label}</IconLabel>
                       </button>
                     ))}
                   </div>
@@ -1415,7 +1430,7 @@ function AiReviewTab({
           <div className={styles.card}>
             <div className={styles.cardBody}>
               <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 4 }}>
-                👤 사람 최종 검토 · 결정
+                <IconLabel name="user" size={13}>사람 최종 검토 · 결정</IconLabel>
               </div>
               <div style={{ fontSize: 11, color: '#8b949e', marginBottom: 12 }}>
                 AI 피드백을 검토한 후 최종 의견을 남겨주세요
@@ -1429,13 +1444,13 @@ function AiReviewTab({
               />
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 <button type="button" className={styles.btnPrimary} onClick={onApprove}>
-                  ✓ 검토 완료 · 승인
+                  <IconLabel name="check" size={12}>검토 완료 · 승인</IconLabel>
                 </button>
                 <button type="button" className={styles.btnGhost} onClick={onRequest}>
-                  🔄 수정 요청
+                  <IconLabel name="refresh" size={12}>수정 요청</IconLabel>
                 </button>
                 <button type="button" className={styles.btnDanger} onClick={onOverride}>
-                  ⚡ AI 무시 · 강제 승인
+                  <IconLabel name="zap" size={12}>AI 무시 · 강제 승인</IconLabel>
                 </button>
               </div>
             </div>
@@ -1469,7 +1484,7 @@ function AiHubView({
     <div className={styles.wrap}>
       <div style={{ marginBottom: 20 }}>
         <h2 className={styles.h2} style={{ marginBottom: 4 }}>
-          🤖 AI + 사람 하이브리드 리뷰
+          <IconLabel name="bot" size={16}>AI + 사람 하이브리드 리뷰</IconLabel>
         </h2>
         <p style={{ fontSize: 11, color: '#8b949e' }}>
           AI가 먼저 분석하고, 사람이 최종 판단하는 2-Step 리뷰 시스템
@@ -1480,13 +1495,13 @@ function AiHubView({
         <div className={styles.cardBody}>
           <div className={styles.flow}>
             {[
-              ['🤖', 'AI 제안', '#bc8cff'],
-              ['👤', 'Dev 검토', '#58a6ff'],
-              ['✅', 'Approve', '#3fb950'],
-              ['🎉', '병합', '#d29922'],
+              ['bot', 'AI 제안', '#bc8cff'],
+              ['user', 'Dev 검토', '#58a6ff'],
+              ['checkCircle', 'Approve', '#3fb950'],
+              ['sparkles', '병합', '#d29922'],
             ].map(([ico, title, color], i) => (
               <div key={title as string} style={{ display: 'flex', alignItems: 'center' }}>
-                {i > 0 && <div className={styles.flowArrow}>›</div>}
+                {i > 0 && <div className={styles.flowArrow}><Icon name="chevronRight" size={18} /></div>}
                 <div
                   className={styles.flowStep}
                   style={{
@@ -1495,7 +1510,7 @@ function AiHubView({
                     color: color as string,
                   }}
                 >
-                  <div style={{ fontSize: 26, marginBottom: 6 }}>{ico}</div>
+                  <div style={{ marginBottom: 6 }}><Icon name={ico as IconName} size={22} /></div>
                   <div style={{ fontSize: 12, fontWeight: 700 }}>{title}</div>
                 </div>
               </div>
@@ -1505,7 +1520,7 @@ function AiHubView({
       </div>
 
       <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 10 }}>
-        📋 PR별 AI 리뷰 현황
+        <IconLabel name="clipboard" size={13}>PR별 AI 리뷰 현황</IconLabel>
       </div>
       {prs.length === 0 ? (
         <div className={styles.card}>
@@ -1530,13 +1545,13 @@ function AiHubView({
                     <div style={{ fontSize: 10, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                       {last ? (
                         <>
-                          <span style={{ color: '#3fb950' }}>🤖 AI {last.score}/100</span>
+                          <span style={{ color: '#3fb950' }}><IconLabel name="bot" size={10}>AI {last.score}/100</IconLabel></span>
                           <span style={{ color: app >= req ? '#3fb950' : '#d29922' }}>
-                            👤 승인 {app}/{req}
+                            <IconLabel name="user" size={10}>승인 {app}/{req}</IconLabel>
                           </span>
                         </>
                       ) : (
-                        <span style={{ color: '#d29922' }}>🤖 AI 미분석</span>
+                        <span style={{ color: '#d29922' }}><IconLabel name="bot" size={10}>AI 미분석</IconLabel></span>
                       )}
                     </div>
                   </div>
@@ -1579,7 +1594,7 @@ function AiHubView({
                           }
                         }}
                       >
-                        {busyId === pr.id ? '…' : last ? '재분석' : 'AI 분석'}
+                        {busyId === pr.id ? '…' : last ? <IconLabel name="bot" size={10}>재분석</IconLabel> : <IconLabel name="bot" size={10}>AI 분석</IconLabel>}
                       </button>
                     )}
                     <button
@@ -1608,7 +1623,7 @@ function ActivityView({ cs, repo }: { cs: CollabState; repo: Repo }) {
   return (
     <div className={styles.wrap}>
       <h2 className={styles.h2} style={{ marginBottom: 16 }}>
-        📊 활동 로그
+        <IconLabel name="chart" size={16}>활동 로그</IconLabel>
       </h2>
       <div className={styles.card}>
         <div className={styles.cardBody}>
@@ -1652,9 +1667,9 @@ function RepoModal({
     <div className={styles.modalOverlay}>
       <div className={`${styles.modal} ${styles.modalSm}`}>
         <div className={styles.modalHdr}>
-          📁 새 저장소 생성
+          <IconLabel name="folder" size={13}>새 저장소 생성</IconLabel>
           <button type="button" className={styles.closeBtn} onClick={onClose}>
-            ✕
+            <Icon name="x" size={14} />
           </button>
         </div>
         <div className={styles.modalBody}>
@@ -1740,9 +1755,9 @@ function PrCreateModal({
     <div className={styles.modalOverlay}>
       <div className={styles.modal}>
         <div className={styles.modalHdr}>
-          🔀 Pull Request 생성
+          <IconLabel name="gitMerge" size={13}>Pull Request 생성</IconLabel>
           <button type="button" className={styles.closeBtn} onClick={onClose}>
-            ✕
+            <Icon name="x" size={14} />
           </button>
         </div>
         <div className={styles.modalBody}>

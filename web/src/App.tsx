@@ -32,6 +32,7 @@ import type {
 } from './types'
 import type { LeftTab } from './types/chat'
 import { detectLang } from './utils/detectLang'
+import { IconLabel } from './components/icons'
 import styles from './App.module.css'
 
 export default function App() {
@@ -253,21 +254,27 @@ export default function App() {
               className={`${styles.ltab} ${leftTab === 'editor' ? styles.lactive : ''}`}
               onClick={() => setLeftTab('editor')}
             >
-              📄 Editor
+              <IconLabel name="file" size={13}>
+                Editor
+              </IconLabel>
             </button>
             <button
               type="button"
               className={`${styles.ltab} ${leftTab === 'github' ? styles.lactive : ''}`}
               onClick={() => setLeftTab('github')}
             >
-              ⬡ GitHub
+              <IconLabel name="github" size={13}>
+                GitHub
+              </IconLabel>
             </button>
             <button
               type="button"
               className={`${styles.ltab} ${leftTab === 'chat' ? styles.lactive : ''}`}
               onClick={() => setLeftTab('chat')}
             >
-              💬 Chat
+              <IconLabel name="message" size={13}>
+                Chat
+              </IconLabel>
             </button>
           </div>
 
@@ -332,14 +339,18 @@ export default function App() {
               className={`${styles.rtab} ${rightTab === 'review' ? styles.active : ''}`}
               onClick={() => setRightTab('review')}
             >
-              📋 코드 리뷰
+              <IconLabel name="clipboard" size={13}>
+                코드 리뷰
+              </IconLabel>
             </button>
             <button
               type="button"
               className={`${styles.rtab} ${rightTab === 'fix' ? styles.active : ''}`}
               onClick={() => setRightTab('fix')}
             >
-              🔧 오류 수정
+              <IconLabel name="wrench" size={13}>
+                오류 수정
+              </IconLabel>
               <span className={`${styles.rdot} ${fixDot ? styles.show : ''}`} />
             </button>
           </div>
@@ -352,7 +363,7 @@ export default function App() {
                 result={review}
                 emptyHint={
                   hasAuth
-                    ? '코드를 입력하고 ⚡ 코드 리뷰를 누르세요'
+                    ? '코드를 입력하고 코드 리뷰를 누르세요'
                     : 'BFF 서버 키 또는 Groq API 키 설정 후 시작'
                 }
                 onOptimize={handleOptimize}

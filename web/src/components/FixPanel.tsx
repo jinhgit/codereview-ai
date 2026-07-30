@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { copyText } from '../hooks/useClipboard'
 import type { FixResult } from '../types'
+import { Icon, IconLabel } from './icons'
 import styles from './FixPanel.module.css'
 
 type Props = {
@@ -82,7 +83,7 @@ export function FixPanel({ loading, error, result, fixedCode, onApply }: Props) 
   if (error) {
     return (
       <div className={styles.errBox}>
-        <strong>❌ 오류 수정 실패</strong>
+<strong><IconLabel name="xCircle" size={13}>오류 수정 실패</IconLabel></strong>
         <br />
         {error}
       </div>
@@ -92,9 +93,9 @@ export function FixPanel({ loading, error, result, fixedCode, onApply }: Props) 
   if (!result) {
     return (
       <div className={styles.empty}>
-        <div className={styles.emptyI}>🔧</div>
+        <div className={styles.emptyI}><Icon name="wrench" size={36} /></div>
         <div className={styles.emptyT}>오류 수정 대기 중</div>
-        <div className={styles.emptyD}>코드 입력 후 🔧 오류 수정을 누르세요</div>
+        <div className={styles.emptyD}><IconLabel name="wrench" size={11}>코드 입력 후 오류 수정을 누르세요</IconLabel></div>
       </div>
     )
   }
@@ -102,7 +103,7 @@ export function FixPanel({ loading, error, result, fixedCode, onApply }: Props) 
   if (!result.has_errors || result.error_count === 0) {
     return (
       <div className={styles.okWrap}>
-        <div style={{ fontSize: 48, marginBottom: 12 }}>✅</div>
+        <div style={{ marginBottom: 12 }}><Icon name="checkCircle" size={48} style={{ color: 'var(--gn)' }} /></div>
         <div className={styles.okTitle}>오류가 없습니다!</div>
         <div className={styles.okDesc}>{result.summary || '코드가 정상입니다.'}</div>
       </div>
@@ -116,7 +117,7 @@ export function FixPanel({ loading, error, result, fixedCode, onApply }: Props) 
       <div className={styles.header}>
         <div className={styles.headerTop}>
           <div className={styles.headerLeft}>
-            <div className={styles.fixIco}>🔧</div>
+            <div className={styles.fixIco}><Icon name="wrench" size={18} /></div>
             <div>
               <div className={styles.headerTitle}>
                 {errors.length}개 오류 발견 · 수정 완료
@@ -126,7 +127,7 @@ export function FixPanel({ loading, error, result, fixedCode, onApply }: Props) 
           </div>
           <div className={styles.actions}>
             <button type="button" className={styles.copyBtn} onClick={doCopy}>
-              {copied ? '✅ 복사됨' : '📋 복사'}
+              {copied ? <IconLabel name="check" size={11}>복사됨</IconLabel> : <IconLabel name="copy" size={11}>복사</IconLabel>}
             </button>
             <button
               type="button"
@@ -137,7 +138,7 @@ export function FixPanel({ loading, error, result, fixedCode, onApply }: Props) 
                 onApply(fixedCode)
               }}
             >
-              ↩ 적용
+              <IconLabel name="arrowLeft" size={11}>적용</IconLabel>
             </button>
           </div>
         </div>
@@ -187,13 +188,13 @@ export function FixPanel({ loading, error, result, fixedCode, onApply }: Props) 
                 {e.fix && <div className={styles.fixTxt}>{e.fix}</div>}
                 {e.original && (
                   <div>
-                    <div className={styles.beforeLbl}>● 오류 코드</div>
+                    <div className={styles.beforeLbl}><IconLabel name="circleDot" size={10}>오류 코드</IconLabel></div>
                     <pre className={styles.before}>{e.original}</pre>
                   </div>
                 )}
                 {e.fixed_code && (
                   <div>
-                    <div className={styles.afterLbl}>● 수정된 코드</div>
+                    <div className={styles.afterLbl}><IconLabel name="circleDot" size={10}>수정된 코드</IconLabel></div>
                     <pre className={styles.after}>{e.fixed_code}</pre>
                   </div>
                 )}
@@ -204,9 +205,9 @@ export function FixPanel({ loading, error, result, fixedCode, onApply }: Props) 
 
         <div className={styles.fullCard}>
           <div className={styles.fullHead}>
-            <span>✅ 수정된 전체 코드</span>
+            <span><IconLabel name="checkCircle" size={12}>수정된 전체 코드</IconLabel></span>
             <button type="button" className={styles.copyBtn} onClick={doCopy}>
-              {copied ? '✅ 복사됨' : '📋 복사'}
+              {copied ? <IconLabel name="check" size={11}>복사됨</IconLabel> : <IconLabel name="copy" size={11}>복사</IconLabel>}
             </button>
           </div>
           <div className={styles.fullCode}>

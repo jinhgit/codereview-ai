@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { IconLabel } from './icons'
 import styles from './ProjectModal.module.css'
 
 type Props = {
@@ -10,7 +11,7 @@ type Props = {
 
 export function ProjectModal({
   open,
-  title = '📁 새 프로젝트',
+  title = '새 프로젝트',
   onClose,
   onConfirm,
 }: Props) {
@@ -39,7 +40,7 @@ export function ProjectModal({
   return (
     <div className={styles.overlay}>
       <div className={styles.box}>
-        <h3>{title}</h3>
+        <h3><IconLabel name="folder" size={14}>{title}</IconLabel></h3>
         <input
           ref={inputRef}
           className={styles.input}

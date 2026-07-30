@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { fetchGitHubFile, guessLangFromPath } from '../services/github'
 import type { Lang } from '../types'
 import { LANG_OPTIONS } from '../types'
+import { IconLabel } from './icons'
 import styles from './GitHubPane.module.css'
 
 type Props = {
@@ -81,12 +82,12 @@ export function GitHubPane({ onLoaded }: Props) {
               <span className="spin" /> 불러오는 중...
             </>
           ) : (
-            '📥 GitHub 코드 불러오기'
+            <IconLabel name="download" size={13}>GitHub 코드 불러오기</IconLabel>
           )}
         </button>
 
-        {error && <div className={styles.err}>❌ {error}</div>}
-        {okMsg && <div className={styles.ok}>✅ {okMsg}</div>}
+        {error && <div className={styles.err}><IconLabel name="xCircle" size={12}>{error}</IconLabel></div>}
+        {okMsg && <div className={styles.ok}><IconLabel name="checkCircle" size={12}>{okMsg}</IconLabel></div>}
 
         <div className={styles.hintBox}>
           <div className={styles.hintTitle}>예시</div>

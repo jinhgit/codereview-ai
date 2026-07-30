@@ -9,7 +9,7 @@ import { ME } from '../types/collab'
 
 const CKEY = 'codereview_collab_v2'
 const COLORS = ['#58a6ff', '#3fb950', '#d29922', '#f85149', '#bc8cff', '#39d2c0', '#ff8c42']
-const EMOJIS = ['🚀', '💡', '⚡', '🔥', '🌟', '🛠️', '🎯', '🏗️']
+const EMOJIS = ['rocket', 'lightbulb', 'zap', 'flame', 'star', 'hammer', 'target', 'building']
 
 export function gid(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 5)
@@ -29,7 +29,7 @@ function seed(): CollabState {
         owner: ME,
         members: [ME, 'alice', 'bob'],
         color: '#58a6ff',
-        emoji: '🚀',
+        emoji: 'rocket',
         mergeRules: {
           requireApproval: true,
           minApprovals: 1,
