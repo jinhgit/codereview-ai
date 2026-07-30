@@ -1,5 +1,6 @@
 import type { ExecResult, Lang } from '../types'
-import { apiPost } from './apiClient'
+import { apiPost, isBffReachable } from './apiClient'
+import { standaloneExecute } from './standalone'
 
 export const LRT: Record<
   Lang,
@@ -21,24 +22,17 @@ export async function runOnPiston(
   lang: Lang,
   stdin = '',
 ): Promise<ExecResult> {
-  try {
-    const res = await apiPost<ExecResult>(
-      '/api/v1/execute',
-      { language: lang, code, stdin },
-      { requireKey: false },
-    )
-    return res.data
-  } catch (e) {
-    return {
-      ok: false,
-      stdout: '',
-      stderr: '',
-      compileStdout: '',
-      compileStderr: '',
-      exitCode: -1,
-      elapsed: '0',
-      language: LRT[lang]?.language || lang,
-      error: e instanceof Error ? e.message : '실행 실패',
+  if (await isBffReachable()) {
+    try {
+      const res = await apiPost<ExecResult>(
+        '/api/v1/execute',
+        { language: lang, code, stdin },
+        { requireKey: false },
+      )
+      return res.data
+    } catch {
+      /* fall through */
     }
   }
+  return standaloneExecute(code, lang, stdin)
 }

@@ -10,6 +10,7 @@
     "dev:all": "npm run dev:server & npm run dev:web",
     "build": "npm run build --prefix server && npm run build --prefix web",
     "build:web": "npm run build --prefix web",
+    "build:html": "npm run build:html --prefix web",
     "build:server": "npm run build --prefix server",
     "start:server": "npm run start --prefix server",
     "install:all": "npm install --prefix server && npm install --prefix web"

@@ -412,18 +412,25 @@ npm run build:web
 npm run start:server
 ```
 
-### 3. 프로토타입 HTML (레거시)
+### 3. 단일 HTML (`codereview-ai.html`)
 
-서버 없이 단일 HTML을 브라우저로 열 수도 있습니다. (챗·협업 포함 전체 기능)
+`web/` 최종 React 앱을 **단일 파일로 번들**한 산출물입니다. (선형 SVG 아이콘 · 전체 기능 포함)
 
 ```bash
-# macOS
-open codereview-ai.html
+# 재생성
+npm run build:html --prefix web
+# → 루트 codereview-ai.html 갱신
 
-# 또는 로컬 정적 서버
+# 실행 (정적 서버 권장)
 python3 -m http.server 8080
 # → http://localhost:8080/codereview-ai.html
+
+# macOS 직접 열기
+open codereview-ai.html
 ```
+
+- **BFF 있음**: `/api`로 서버 연동  
+- **BFF 없음**: 브라우저에서 Groq/Piston 직접 호출 (상단 API Key 입력)
 
 ### 4. Groq API Key
 
