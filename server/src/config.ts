@@ -11,7 +11,9 @@ export const config = {
   corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:5173',
   allowClientKey: bool(process.env.ALLOW_CLIENT_KEY, true),
   maxCodeChars: Number(process.env.MAX_CODE_CHARS || 80_000),
-  pistonUrl: process.env.PISTON_URL || 'https://emkc.org/api/v2/piston/execute',
+  // emkc 공개 API는 2026-02 이후 화이트리스트 전용. 기본 실행은 Judge0.
+  pistonUrl: process.env.PISTON_URL || '',
+  judge0Url: process.env.JUDGE0_URL || 'https://ce.judge0.com',
 }
 
 export function hasServerKey(): boolean {

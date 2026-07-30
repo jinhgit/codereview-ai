@@ -6,7 +6,7 @@ import type { AiReview, AiReviewItem, PullRequest } from '../types/collab'
 import type { LlmTurn } from '../types/chat'
 import { parseJSON, unescapeCode } from '../utils/parseJson'
 import { callGroq } from './groq'
-import { runOnPiston as runPistonDirect } from './pistonDirect'
+import { executeCode } from './executeEngine'
 import { gid } from './collabStore'
 
 export async function standaloneReview(
@@ -203,4 +203,4 @@ export async function standalonePrReview(
   }
 }
 
-export { runPistonDirect as standaloneExecute }
+export { executeCode as standaloneExecute }

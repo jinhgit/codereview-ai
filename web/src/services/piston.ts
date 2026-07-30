@@ -1,27 +1,13 @@
 import type { ExecResult, Lang } from '../types'
 import { apiPost, isBffReachable } from './apiClient'
-import { standaloneExecute } from './standalone'
-
-export const LRT: Record<
-  Lang,
-  { language: string; version: string; ext: string }
-> = {
-  python: { language: 'python', version: '3.10.0', ext: 'main.py' },
-  javascript: { language: 'javascript', version: '18.15.0', ext: 'main.js' },
-  typescript: { language: 'typescript', version: '5.0.3', ext: 'main.ts' },
-  java: { language: 'java', version: '15.0.2', ext: 'Main.java' },
-  c: { language: 'c', version: '10.2.0', ext: 'main.c' },
-  cpp: { language: 'c++', version: '10.2.0', ext: 'main.cpp' },
-  go: { language: 'go', version: '1.16.2', ext: 'main.go' },
-  rust: { language: 'rust', version: '1.50.0', ext: 'main.rs' },
-  sql: { language: 'sqlite3', version: '3.36.0', ext: 'main.sql' },
-}
+import { executeCode } from './executeEngine'
 
 export async function runOnPiston(
   code: string,
   lang: Lang,
   stdin = '',
 ): Promise<ExecResult> {
+  // 1) BFF 경유 (서버 측 Judge0/Wandbox)
   if (await isBffReachable()) {
     try {
       const res = await apiPost<ExecResult>(
@@ -30,9 +16,12 @@ export async function runOnPiston(
         { requireKey: false },
       )
       return res.data
-    } catch {
-      /* fall through */
+    } catch (e) {
+      // BFF 실패 시 브라우저 직접 실행으로 폴백
+      console.warn('[execute] BFF failed, falling back to client engine', e)
     }
   }
-  return standaloneExecute(code, lang, stdin)
+
+  // 2) 클라이언트 직접 (Judge0 / Wandbox)
+  return executeCode(code, lang, stdin)
 }

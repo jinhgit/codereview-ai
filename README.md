@@ -209,7 +209,7 @@ CodeReview AI는 다음 문제를 한 제품 안에서 줄이는 것을 목표�
 | 언어 | HTML5, CSS3, **Vanilla JavaScript (ES5 스타일)** | 프레임워크 없음 |
 | UI | 커스텀 CSS, CSS Variables, Flex/Grid | GitHub Dark 톤 |
 | LLM | **Groq** OpenAI-compatible Chat Completions | 브라우저 직접 호출 |
-| 코드 실행 | **Piston** (`emkc.org` public instance) | 다국어 샌드박스 |
+| 코드 실행 | **Judge0 CE** (기본) + Wandbox 폴백 | emkc 공개 Piston은 2026-02 이후 화이트리스트 전용 |
 | 원격 파일 | GitHub Raw Content | Optional token |
 | 영속성 | `sessionStorage`, `localStorage` | 서버 DB 없음 |
 | 문서 PDF | Python **ReportLab** | `docs/generate_specs.py` |

@@ -171,9 +171,11 @@ export default function App() {
       toast.error('실행할 코드를 입력해주세요.')
       return
     }
+    // 언어 자동 감지는 보조만 — 사용자가 선택한 언어 우선
+    // (짧은 코드가 잘못 python으로 잡히면 실행 실패하는 문제 방지)
     const detected = detectLang(c)
-    const useLang = detected || lang
-    if (detected && detected !== lang) setLang(detected)
+    const useLang = lang || detected || 'python'
+    if (!lang && detected) setLang(detected)
 
     setExecOpen(true)
     setExecRunning(true)
@@ -184,7 +186,23 @@ export default function App() {
       setExecResult(r)
       if (r.error) toast.error(r.error)
       else if (r.ok) toast.success('실행 완료')
+      else if (r.compileStderr) toast.error('컴파일 오류')
+      else if (r.stderr) toast.error('런타임 오류')
       else toast.error('실행 중 오류가 발생했습니다')
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : '실행 실패'
+      setExecResult({
+        ok: false,
+        stdout: '',
+        stderr: '',
+        compileStdout: '',
+        compileStderr: '',
+        exitCode: -1,
+        elapsed: '0',
+        language: useLang,
+        error: msg,
+      })
+      toast.error(msg)
     } finally {
       setExecRunning(false)
       setStatus('ready')

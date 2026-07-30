@@ -101,7 +101,7 @@ export function ExecPanel({
             <div className={styles.outSpin} />
             <div>
               <div className={styles.loadTitle}>컴파일 및 실행 중...</div>
-              <div className={styles.loadSub}>Piston 런타임에 요청 중</div>
+              <div className={styles.loadSub}>Judge0 / 실행 엔진에 요청 중</div>
             </div>
           </div>
         )}
